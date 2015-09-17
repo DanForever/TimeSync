@@ -1,0 +1,12 @@
+iso8601/iso8601.py,sha256=7T1Wiw_ghrP_pn--IaWJJzH03-dq6mzVP3FYBZYJlg4,5958
+iso8601/test_iso8601.py,sha256=TOdB_ujk-V30nYck2Z51GGwxSFPef__khvCSsKNcyUI,7488
+iso8601/__init__.py,sha256=2fxA8Xny1V5PTJR49nA43wY6rHrMKswvqblfGyngt2k,23
+iso8601-0.1.10.dist-info/DESCRIPTION.rst,sha256=y6zbxqmiY4UfgvJCCmascCJuLYGQyTLxH7bP9LQtTcY,6329
+iso8601-0.1.10.dist-info/METADATA,sha256=0cHYWdzUfNP0fr-vpOmZXgXGVZsnJ_Ga1Kcdx9BxBek,6912
+iso8601-0.1.10.dist-info/metadata.json,sha256=q5qE4FzP0aNjfM3ddCgO2kbZfC_JXqK-FmUtw_5L76w,574
+iso8601-0.1.10.dist-info/RECORD,,
+iso8601-0.1.10.dist-info/top_level.txt,sha256=QcuZrOQny2sMGrMdLZVtCilwlURtG50VMJZ4bYLwGQw,8
+iso8601-0.1.10.dist-info/WHEEL,sha256=0NI6mbT51nl6pAz4VbYGIlowHOfz4mGNiPEqLY2mxNU,97
+iso8601/__init__.pyc,,
+iso8601/iso8601.pyc,,
+iso8601/test_iso8601.pyc,,
