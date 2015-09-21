@@ -1,16 +1,22 @@
+var mrFacebookMenuEvents =
+{
+	title : "Events",
+	subtitle : "Subscribe to facebook events"
+};
+
+var mrFacebookMenuBirthdays =
+{
+	title : "Birthdays",
+	subtitle : "Subscribe to your friends birthdays"
+};
+
 var mrFacebookMainMenu =
 {
 	title : "Facebook",
 	items :
 	[
-		{
-			title : "Events",
-			subtitle : "Subscribe to facebook events"
-		},
-		{
-			title : "Birthdays",
-			subtitle : "Subscribe to your friends birthdays"
-		}
+		mrFacebookMenuEvents,
+		mrFacebookMenuBirthdays
 	]
 };
 
@@ -20,7 +26,7 @@ var mrTraktMainMenu =
 	items :
 	[
 		{
-			title : "Test"
+			title : "TV Shows"
 		}
 	]
 };
@@ -84,6 +90,12 @@ var mrPleaseWait =
 	subtitle: 'Please Wait...'
 };
 
+var mrErrorUnknown =
+{
+	title: 'TimeSync',
+	subtitle: 'Something went wrong :('
+};
+
 function mrAuthRequest( url, code )
 {
 	var ob =
@@ -107,6 +119,12 @@ var wrapper =
 		Trakt : mrTraktMainMenu
 	},
 	
+	FacebookItems :
+	{
+		Events : mrFacebookMenuEvents,
+		Birthdays : mrFacebookMenuBirthdays
+	},
+
 	SubscribeMenuItems :
 	{
 		Subscribe : mrSubscribeMenuItem,
@@ -118,6 +136,7 @@ var wrapper =
 		NoTimelineToken : mrErrorNoTimelineToken,
 		NoAuth : mrErrorNoAuth,
 		UnderConstruction : mrErrorUnderConstruction,
+		Unknown: mrErrorUnknown
 	},
 	
 	GetAuthRequest : mrAuthRequest

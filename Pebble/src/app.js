@@ -5,7 +5,8 @@ var timelineToken = null;
 var main = new UI.Menu( Menu.MainMenu );
 var loadingCard = new UI.Card( Menu.PleaseWait );
 var subscribeMenu = new UI.Menu( Menu.SubscribeMenu );
-	
+var facebookBranch = "";
+
 function FetchTimelineToken()
 {
 	console.log( "Fetching timeline token" );
@@ -39,11 +40,53 @@ function FetchTimelineToken()
 	return true;
 }
 
+function FacebookSubscribeCallback( branch, action, success )
+{
+	if( success )
+	{
+		console.log( "FacebookSubscribeCallback() Success!" );
+		
+		var actionStr = ( action == "subscribe" )? "Subscribed to" : "Unsubscribed from";
+		
+		var cardData =
+		{
+			title: 'TimeSync',
+			subtitle: actionStr + ' Facebook ' + branch
+		};
+		
+		var subscribedCard = new UI.Card( cardData );
+		subscribedCard.show();
+		loadingCard.hide();
+	}
+	else
+	{
+		console.log( "FacebookSubscribeCallback() Failure!" );
+		var errorCard = new UI.Card( Menu.PleaseWait );
+		errorCard.show();
+		loadingCard.hide();
+	}
+}
+
+function FacebookSubscribeOn( e )
+{
+	var fb = require( 'fb' );
+	if( e.item == Menu.SubscribeMenuItems.Subscribe )
+	{
+		fb.Subscribe( timelineToken, facebookBranch, FacebookSubscribeCallback );
+		loadingCard.show();
+	}
+	else if( e.item == Menu.SubscribeMenuItems.Unsubscribe )
+	{
+		fb.Unsubscribe( timelineToken, facebookBranch, FacebookSubscribeCallback );
+		loadingCard.show();
+	}
+}
+
 function FacebookAuthCallback( auth )
 {
 	if( auth.hasAccess )
 	{
-		subscribeMenu.title = "Facebook";
+		subscribeMenu.on( 'select', FacebookSubscribeOn );
 		subscribeMenu.show();
 		loadingCard.hide();
 	}
@@ -66,8 +109,25 @@ main.on
 	'select',
 	function( e )
 	{
+		console.log( "main.on()" );
+		
 		if( e.section == Menu.MainMenuItems.Facebook )
 		{
+			console.log( "e.section == Menu.MainMenuItems.Facebook" );
+			
+			console.log( e.item );
+			
+			if( e.item == Menu.FacebookItems.Events )
+			{
+				console.log( "e.items == Menu.FacebookItems.Events" );
+				facebookBranch = "events";
+			}
+			else if( e.item == Menu.FacebookItems.Birthdays )
+			{
+				console.log( "e.items == Menu.FacebookItems.Birthdays" );
+				facebookBranch = "birthdays";
+			}
+			
 			var fb = require( 'fb' );
 			fb.GetAuth( timelineToken, FacebookAuthCallback );
 			loadingCard.show();

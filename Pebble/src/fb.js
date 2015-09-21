@@ -1,6 +1,9 @@
 
 var version = "v1";
-var baseUrl = "https://timesync-1061.appspot.com/" + version + "/facebook/";
+
+//var domain =  "https://timesync-1061.appspot.com/"
+var domain = "https://5d99b0a4.ngrok.io/";
+var baseUrl = domain + version + "/facebook/";
 
 function fbGetAuth( timelineToken, callback )
 {
@@ -42,6 +45,11 @@ function fbGetAuth( timelineToken, callback )
 				returnData.url	= data.url;
 			}
 			
+			if( 'name' in data )
+			{
+				returnData.name = data.name;
+			}
+			
 			callback( returnData );
 		},
 		
@@ -62,9 +70,67 @@ function fbGetAuth( timelineToken, callback )
 	);
 }
 
+function fbSubscribeCommon( timelineToken, branch, action, callback )
+{
+	console.log( "fbSubscribeCommon()" );
+	
+	var url = baseUrl + branch + "/" + action + "/";
+	
+	var headers =
+	{
+		"X-User-Token" : timelineToken,
+	};
+		
+	var ajax = require('ajax');
+	
+	ajax
+	(
+		{
+			url: url,
+			type: 'json',
+			method: 'post',
+			headers : headers,
+		},
+		
+		function( data, status, request )
+		{
+			console.log( "SUCCESS! :D" );
+			console.log( "http: " + status );
+			console.log( "data: " + JSON.stringify( data, null, 4 ) );
+			
+			callback( branch, action, true );
+		},
+		
+		function( data, status, request )
+		{
+			console.log( "Failure to update subscription :(" );
+			console.log( "http: " + status );
+			console.log( "data: " + JSON.stringify( data, null, 4 ) );
+			
+			callback( branch, action, false );
+		}
+	);
+}
+
+function fbSubscribe( timelineToken, branch, callback )
+{
+	console.log( "fbSubscribe()" );
+	
+	fbSubscribeCommon( timelineToken, branch, "subscribe", callback );
+}
+
+function fbUnsubscribe( timelineToken, branch, callback )
+{
+	console.log( "fbUnsubscribe()" );
+	
+	fbSubscribeCommon( timelineToken, branch, "unsubscribe", callback );
+}
+
 var wrapper =
 {
 	GetAuth : fbGetAuth,
+	Subscribe : fbSubscribe,
+	Unsubscribe : fbUnsubscribe
 };
 
 this.exports = wrapper;
