@@ -38,8 +38,31 @@ class WatchPin( db.Model ):
 	body = db.StringProperty( multiline = True )
 	start_time = db.DateTimeProperty()
 
+class FacebookSubscription( db.Model ):
+	watchToken = db.StringProperty()
+	events = db.BooleanProperty()
+	birthdays = db.BooleanProperty()
+
 class BetaKey( db.Model ):
 	id = blobstore.BlobReferenceProperty()
+
+class TemporaryAuthToken( db.Model ):
+	watchToken = db.StringProperty()
+
+def CreateTemporaryAuthToken( watchToken, generatedToken ):
+	token = TemporaryAuthToken( key_name = generatedToken, watchToken = watchToken )
+	return token
+
+def CreateFacebookSubscription( fbuid, watchToken ):
+	entry = FacebookSubscription \
+	(
+		key_name = fbuid,
+		watchToken = watchToken,
+		events = False,
+		birthdays = False
+	)
+	
+	return entry
 
 def CreateBetaKey( key ):
 	betaKey = BetaKey( key_name = "Key", id = key )
@@ -101,10 +124,23 @@ def CreateWatchPin( watch, id, title, body, start_time ):
 	
 	return pin
 
+def FindTemporaryAuthToken( token ):
+	key = db.Key.from_path( 'TemporaryAuthToken', token )
+	return db.get( key )
+
 def FindBetaKey():
 	key = db.Key.from_path( 'BetaKey', "Key" )
 	return db.get( key )
 
+def FindFacebookSubscriptionByWatchToken( watchToken ):
+	query = FacebookSubscription.all()
+	query.filter( "watchToken =", watchToken )
+	return query.get()
+	
+def FindFacebookSubscription( fbuid ):
+	key = db.Key.from_path( 'FacebookSubscription', fbuid )
+	return db.get( key )
+	
 def FindChild( pebbleToken, platform, childType ):
 	parentKey = db.Key.from_path( 'Watch', pebbleToken )
 	key = db.Key.from_path( childType, platform, parent = parentKey )

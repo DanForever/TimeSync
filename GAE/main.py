@@ -32,6 +32,39 @@ class BetaHandler( webapp2.RequestHandler ):
 		values = {}
 		self.response.write( template.render( path, values ) )
 
+class CallbackHandler( webapp2.RequestHandler ):
+	def common( self, version, handler, func ):
+		handlers = \
+		{
+			"facebook" : facebook
+		}
+		
+		try:
+			handler = handlers[ handler ].CallbackHandler( self.app, self.request )
+		except:
+			# Failed to create the handler object, (aka, a valid one doesn't exist - 404)
+			self.response.set_status( requests.codes.not_found )
+		
+		try:
+			getattr( handler, func )()
+			
+			self.response.set_status( handler.response.status )
+			self.response.write( handler.response.data )
+			
+		except Exception as e:
+			import traceback
+			stack = traceback.format_exc()
+			logging.error( "Unknown Error: " + str( e ) )
+			logging.error( stack )
+			
+			self.response.set_status( requests.codes.internal_server_error )
+	
+	def get( self, version, handler ):
+		self.common( version, handler, "Get" )
+		
+	def post( self, version, handler ):
+		self.common( version, handler, "Post" )
+
 class MainHandler( webapp2.RequestHandler ):
 	def post( self, version, handler, branch, action ):
 	
@@ -41,8 +74,8 @@ class MainHandler( webapp2.RequestHandler ):
 		}
 		
 		try:
-			handler = handlers[ handler ].Handler()
-			handler.Process( self.request, branch, action )
+			handler = handlers[ handler ].Handler( self.app, self.request )
+			handler.Process( branch, action )
 			
 			self.response.set_status( handler.response.status )
 			
@@ -61,12 +94,13 @@ class MainHandler( webapp2.RequestHandler ):
 app = webapp2.WSGIApplication \
 (
 	[
-		( '/', DefaultHandler ),
-		( '/beta/?', BetaHandler ),
-		( '/beta/upload/', beta.FormHandler ),
-		( '/beta/upload/submit/', beta.UploadHandler ),
-		( '/beta/download/?', beta.DownloadHandler ),
-		( r'/v(\d+)/(\w+)/(\w+)/(\w+)/?', MainHandler ),
+		webapp2.Route( '/', DefaultHandler ),
+		webapp2.Route( '/beta/', BetaHandler ),
+		webapp2.Route( '/beta/upload/', beta.FormHandler ),
+		webapp2.Route( '/beta/upload/submit/', beta.UploadHandler ),
+		webapp2.Route( '/beta/download/', beta.DownloadHandler ),
+		webapp2.Route( '/v<version:\d+>/callback/<handler:\w+>/', CallbackHandler, 'callback' ),
+		webapp2.Route( '/v<version:\d+>/<handler:\w+>/<branch:\w+>/<action:\w+>/', MainHandler ),
 	],
 	debug = os.environ[ 'SERVER_SOFTWARE' ].startswith( 'Development' )
 )

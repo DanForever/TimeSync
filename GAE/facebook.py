@@ -3,6 +3,7 @@ import webapp2
 import storage
 import datetime
 from json import dumps as jsonToString
+from json import loads as stringToJson
 import logging
 import iso8601
 import secrets.facebook
@@ -33,16 +34,78 @@ class HTTPResponse():
 		self.status = requests.codes.ok
 		self.data = ""
 
-class Handler():
-	def __init__( self ):
+class BaseHandler():
+	def __init__( self, app, request ):
 		self.response = HTTPResponse()
+		self.app = app
+		self.request = request
+
+class CallbackHandler( BaseHandler ):
+	def Get( self ):
+		logging.debug( "Facebook callback handler Get(): " + str( self.request.GET ) )
+
+		if not ( self.request.GET[ 'hub.mode' ] == "subscribe" ):
+			logging.debug( "Facebook callback handler Get(): Missing subcribe mode" )
+			self.response.status = requests.codes.bad_request
+			return
+		
+		storedToken = storage.FindTemporaryAuthToken( self.request.GET[ 'hub.verify_token' ] )
+		
+		if not storedToken:
+			logging.debug( "Facebook Missing storage token" )
+			self.response.status = requests.codes.unauthorized
+			return
+		
+		pebbleToken = storedToken.watchToken
+		storedToken.delete()
+		
+		self.response.status = requests.codes.ok
+		self.response.data = self.request.GET[ 'hub.challenge' ]
 	
-	def Process( self, request, branch, action ):
+	def Post( self ):
+		logging.debug( "CallbackHandler Post()" )
+		logging.debug( "Callback headers: " + str( self.request.headers ) )
+		logging.debug( "Callback POST: " + str( self.request.POST ) )
+		logging.debug( "Callback body: " + str( self.request.body ) )
+		
+		# First authenticate that the request was made by facebook
+		import hmac
+		import hashlib
+		
+		calculatedSha = "sha1=" + hmac.new( secrets.facebook.APP_SECRET, str( self.request.body ), hashlib.sha1 ).hexdigest()
+		receivedSha = self.request.headers[ 'X-Hub-Signature' ]
+		
+		if calculatedSha == receivedSha:
+			logging.debug( "Calculated SHA (" + calculatedSha + ") matches received SHA" )
+			
+			requestData = stringToJson( self.request.body )
+			
+			if requestData[ 'object' ] == "user":
+				for entry in requestData[ 'entry' ]:
+					if "events" in entry[ 'changed_fields' ]:
+						fbuid = entry[ 'uid' ]
+						
+						logging.debug( "Checking subscription data for user: " + str( fbuid ) )
+						fbSub = storage.FindFacebookSubscription( fbuid )
+						
+						if fbSub.events:
+							logging.debug( "Updating events for user: " + str( fbuid ) )
+							
+							regularHandler = Handler( self.app, self.request )
+							regularHandler.GetEvents( fbSub.watchToken )
+			
+			self.response.status = requests.codes.ok
+		
+		else:
+			self.response.status = requests.codes.unauthorized
+			
+class Handler( BaseHandler ):
+	def Process( self, branch, action ):
 		branches = \
 		{
 			"auth" : self.GetAccess,
-			"events" : self.GetEvents
-			#"birthdays" : Birthdays
+			"events" : self.SubscribeEvents,
+			"birthdays" : self.SubscribeBirthdays
 		}
 		
 		actions = \
@@ -55,16 +118,89 @@ class Handler():
 			"query"	: False
 		}
 		
-		logging.debug( str( secrets.facebook.CLIENT_ID ) )
-		
 		if branch not in branches or action not in actions:
 			self.response.status = requests.codes.not_found
 			return
 		
-		pebbleToken = request.headers[ 'X-User-Token' ]
+		pebbleToken = self.request.headers[ 'X-User-Token' ]
 		
 		branches[ branch ]( pebbleToken, actions[ action ] )
 
+	def SubscribeEvents( self, pebbleToken, action ):
+		logging.debug( "SubscribeEvents()" )
+		
+		# update sub data
+		fbSubData = storage.FindFacebookSubscriptionByWatchToken( pebbleToken )
+		fbSubData.events = action
+		fbSubData.put()
+		
+		if action:
+			# Grab all the events for the user
+			self.GetEvents( pebbleToken )
+		
+		response = \
+		{
+			'status' : "success",
+		}
+		self.response.status = requests.codes.ok
+		self.response.data = jsonToString( response )
+		
+	def SubscribeBirthdays( self, pebbleToken, action ):
+		logging.debug( "SubscribeBirthdays()" )
+		
+		# update sub data
+		fbSubData = storage.FindFacebookSubscriptionByWatchToken( pebbleToken )
+		fbSubData.birthdays = action
+		fbSubData.put()
+		
+		response = \
+		{
+			'status' : "success",
+		}
+		self.response.status = requests.codes.ok
+		self.response.data = jsonToString( response )
+		
+	def Subscribe( self, pebbleToken, type ):
+		logging.debug( "Facebook Subscribe()" )
+		
+		callbackUrl = self.app.router.build \
+		(
+			self.request,
+			"callback",
+			(),
+			{
+				'version' : 1,
+				'handler' : "facebook",
+				'_full' : True,
+				'_scheme' : "https"
+			}
+		)
+		
+		logging.debug( "callback url: " + callbackUrl )
+		
+		import random
+		import string
+		authToken = ''.join( random.SystemRandom().choice( string.ascii_uppercase + string.digits ) for _ in range( 10 ) )
+		
+		tokenStorage = storage.CreateTemporaryAuthToken( pebbleToken, authToken )
+		tokenStorage.put()
+		
+		payload = \
+		{
+			'object' : "user",
+			'fields' : type,
+			'callback_url' : callbackUrl,
+			'verify_token' : authToken,
+			'access_token' : str( secrets.facebook.CLIENT_ID ) + "|" + secrets.facebook.APP_SECRET
+		}
+		
+		url = "https://graph.facebook.com/v2.4/" + str( secrets.facebook.CLIENT_ID ) + "/subscriptions"
+		
+		response = requests.post( url, params = payload )
+		
+		self.response.status = response.status_code
+		self.response.data = response.text
+	
 	def NetGetNewDeviceLoginCode( self ):
 		baseUrl = 'https://graph.facebook.com/'
 		subUrl = 'oauth/device'
@@ -144,29 +280,51 @@ class Handler():
 		logging.debug( "Created auth request" )
 		
 		return authRequest
-
+		
+		
 	def CheckLoginCodeStatus( self, pebbleToken, authRequest ):
 		#todo: Check time since last poll?
 		logging.debug( "Checking log in status with facebook" )
-		status = self.NetGetDeviceLoginCodeStatus( authRequest.auth_code )
+		loginCodeStatus = self.NetGetDeviceLoginCodeStatus( authRequest.auth_code )
 		
-		if status[ 0 ] == requests.codes.ok:
+		if loginCodeStatus[ 0 ] == requests.codes.ok:
 			# Create parent object, this does not need to be written to the
 			# database as it's only purpose is to contain the pebble token
 			watch = storage.CreateWatch( pebbleToken )
 			
-			accessToken = status[ 1 ][ 'access_token' ]
+			accessToken = loginCodeStatus[ 1 ][ 'access_token' ]
 			access = storage.CreateAccess( watch, PLATFORM, accessToken )
 			
 			# store it in the database
 			access.put()
 			
-			self.response.status = requests.codes.ok
+			# We need to store the facebook user id for when we're told about event changes
+			# And also the user's name so that we can display it on the watch as evidence of a successful sign in
+			getDataStatus = self.NetGetCurrentUserData( accessToken )
 			
-			response = \
-			{
-				'status' : "success",
-			}
+			if( getDataStatus[ 0 ] == requests.codes.ok ):
+				
+				self.response.status = requests.codes.ok
+				
+				response = \
+				{
+					'status' : "success",
+					'name' : getDataStatus[ 1 ][ 'name' ]
+				}
+				
+				newSub = storage.CreateFacebookSubscription( getDataStatus[ 1 ][ 'id' ], pebbleToken )
+				newSub.put()
+				
+				# No longer required
+				authRequest.delete()
+				
+			else:
+				self.response.status = requests.codes.bad_request
+				response = \
+				{
+					'status' : "failure",
+					'message' : "Could not get user details",
+				}
 			
 		else:
 			self.response.status = requests.codes.bad_request
@@ -185,6 +343,7 @@ class Handler():
 		access = storage.FindPlatformAccessCode( pebbleToken, PLATFORM )
 		
 		if access:
+		
 			response = \
 			{
 				'status' : "success",
@@ -265,6 +424,17 @@ class Handler():
 		format = self.DateTimeToISO8601( dt )
 		return format[:-2] + ":" + format[-2:]
 		
+	def NetGetCurrentUserData( self, accessToken ):
+		url = "https://graph.facebook.com/v2.4/me"
+		
+		payload = \
+		{
+			'access_token' : accessToken,
+		}
+		
+		response = requests.get( url, params = payload )
+		return ( response.status_code, response.json() )
+		
 	def NetGetEvents( self, accessToken ):
 		url = "https://graph.facebook.com/v2.4/me/events"
 		
@@ -273,8 +443,6 @@ class Handler():
 		since = datetime.datetime.now( UTC() ) - datetime.timedelta( days = 2 )
 		
 		nowInFacebookFormat = self.DateTimeToISO8601( since )
-		#facebookDateFormat = "%Y-%m-%dT%H:%M:%S+0000"
-		#nowInFacebookFormat = since.strftime( facebookDateFormat )
 		
 		payload = \
 		{
@@ -298,7 +466,12 @@ class Handler():
 			
 			startTime = self.ISO8601ToDateTime( event[ 'start_time' ] )
 			
-			pin = storage.CreateWatchPin( watch, key, event[ 'name' ], event[ 'description' ], startTime )
+			if 'description' in event:
+				description = event[ 'description' ]
+			else:
+				description = "No description"
+			
+			pin = storage.CreateWatchPin( watch, key, event[ 'name' ], description, startTime )
 			pin.put()
 			
 			#Construct HTTP put request
@@ -314,7 +487,7 @@ class Handler():
 					'type' 		: "genericNotification",
 					'title' 	: event[ 'name' ],
 					'tinyIcon'	: "system://images/NOTIFICATION_FACEBOOK",
-					'body' 		: event[ 'description' ]
+					'body' 		: description
 				}
 			}
 			
@@ -340,8 +513,11 @@ class Handler():
 			
 			s = requests.Session()
 			response = s.send(prep)
+			
+			logging.debug( "Pin response status: " + str( response.status_code ) )
+			logging.debug( "Pin response data: " + response.text )
 
-	def GetEvents( self, pebbleToken, action ):
+	def GetEvents( self, pebbleToken ):
 		# Check to see if we already have facebook access
 		access = storage.FindPlatformAccessCode( pebbleToken, PLATFORM )
 		
@@ -359,8 +535,7 @@ class Handler():
 		
 		if status[ 0 ] == requests.codes.ok:
 			self.ProcessEvents( pebbleToken, status[ 1 ][ 'data' ] )
-			self.response.status = requests.codes.ok
+			return True
 			
 		else:
-			self.response.status = requests.codes.bad_request
-			self.response.data = jsonToString( status[ 1 ] )
+			return False
