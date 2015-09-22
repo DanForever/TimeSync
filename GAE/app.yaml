@@ -12,7 +12,7 @@ handlers:
 - url: /beta/upload/.*
   script: main.app
   login: admin
-  auth_fail_action: unauthorized
+  auth_fail_action: redirect
 
 - url: /stylesheets
   static_dir: templates/stylesheets

@@ -18,16 +18,16 @@ ZERO = datetime.timedelta( 0 )
 
 # This class is a hack to avoid installing/importing pytz
 class UTC(datetime.tzinfo):
-    """UTC"""
+	"""UTC"""
 
-    def utcoffset( self, dt ):
-        return ZERO
-
-    def tzname( self, dt ):
-        return "UTC"
-
-    def dst( self, dt ):
-        return ZERO
+	def utcoffset( self, dt ):
+		return ZERO
+	
+	def tzname( self, dt ):
+		return "UTC"
+	
+	def dst( self, dt ):
+		return ZERO
 
 class HTTPResponse():
 	def __init__( self ):
@@ -92,7 +92,7 @@ class CallbackHandler( BaseHandler ):
 							logging.debug( "Updating events for user: " + str( fbuid ) )
 							
 							regularHandler = Handler( self.app, self.request )
-							regularHandler.GetEvents( fbSub.watchToken )
+							regularHandler.GetEvents( fbSub.watchToken, fbuid )
 			
 			self.response.status = requests.codes.ok
 		
@@ -136,7 +136,7 @@ class Handler( BaseHandler ):
 		
 		if action:
 			# Grab all the events for the user
-			self.GetEvents( pebbleToken )
+			self.GetEvents( pebbleToken, fbSubData.key().name() )
 		
 		response = \
 		{
@@ -453,16 +453,19 @@ class Handler( BaseHandler ):
 		response = requests.get( url, params = payload )
 		return ( response.status_code, response.json() )
 	
-	def ProcessEvents( self, pebbleToken, events ):
+	def ProcessEvents( self, pebbleToken, events, fbuid ):
 		# Create parent object, this does not need to be written to the
 		# database as it's only purpose is to contain the pebble token
 		watch = storage.CreateWatch( pebbleToken )
+		
+		utcTZ = UTC()
 		
 		for event in events:
 			logging.debug( "Event '" + event[ 'name' ] + "', ID: " + event[ 'id' ] )
 			
 			# We need to associate the key with facebook events
-			key = "fbev_" + str( event[ 'id' ] )
+			# ts-fbev-XXXXXXXXXXXXXXXX-YYYYYYYYYYYYYYYYY
+			key = "ts-fbev-" + str( fbuid ) + "-" + str( event[ 'id' ] )
 			
 			startTime = self.ISO8601ToDateTime( event[ 'start_time' ] )
 			
@@ -474,9 +477,12 @@ class Handler( BaseHandler ):
 			pin = storage.CreateWatchPin( watch, key, event[ 'name' ], description, startTime )
 			pin.put()
 			
+			#Convert time to UTC
+			startTimeUtc = startTime.astimezone( utcTZ )
+			
 			#Construct HTTP put request
-			pebbleDateFormat = "%Y-%m-%dT%H:%M:%S%z"
-			eventTimeInPebbleFormat = self.DateTimeToPbl( startTime )
+			pebbleDateFormat = "%Y-%m-%dT%H:%M:%SZ"
+			eventTimeInPebbleFormat = startTimeUtc.strftime( pebbleDateFormat )
 			
 			body = \
 			{
@@ -498,26 +504,18 @@ class Handler( BaseHandler ):
 			}
 			
 			url = "https://timeline-api.getpebble.com/v1/user/pins/" + key;
+			bodyStr = jsonToString( body )
 			
-			#logging.debug( "Pin data: " + jsonToString( body ) )
+			response = requests.put( url = url, headers = headers, data = bodyStr )
 			
-			req = requests.Request( method = 'PUT', url = url, headers = headers, data = jsonToString( body ) )
-			prep = req.prepare()
-			
-			logging.debug('{}\n{}\n{}\n\n{}'.format(
-				'-----------START-----------',
-				prep.method + ' ' + prep.url,
-				'\n'.join('{}: {}'.format(k, v) for k, v in prep.headers.items()),
-				prep.body,
-			))
-			
-			s = requests.Session()
-			response = s.send(prep)
+			logging.debug( "Pin URL: " + str( response.url ) )
+			logging.debug( "Pin Data: " + bodyStr )
+			logging.debug( "Pin Headers: " + str( headers ) )
 			
 			logging.debug( "Pin response status: " + str( response.status_code ) )
 			logging.debug( "Pin response data: " + response.text )
 
-	def GetEvents( self, pebbleToken ):
+	def GetEvents( self, pebbleToken, fbuid ):
 		# Check to see if we already have facebook access
 		access = storage.FindPlatformAccessCode( pebbleToken, PLATFORM )
 		
@@ -534,7 +532,7 @@ class Handler( BaseHandler ):
 		status = self.NetGetEvents( access.token )
 		
 		if status[ 0 ] == requests.codes.ok:
-			self.ProcessEvents( pebbleToken, status[ 1 ][ 'data' ] )
+			self.ProcessEvents( pebbleToken, status[ 1 ][ 'data' ], fbuid )
 			return True
 			
 		else:
