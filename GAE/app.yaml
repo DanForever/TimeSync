@@ -13,7 +13,14 @@ handlers:
   script: main.app
   login: admin
   auth_fail_action: redirect
-
+  secure: always
+  
+- url: /admin/.*
+  script: main.app
+  login: admin
+  auth_fail_action: redirect
+  secure: always
+  
 - url: /stylesheets
   static_dir: templates/stylesheets
   

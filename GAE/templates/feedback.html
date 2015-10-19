@@ -1,0 +1,10 @@
+<html>
+    <head>
+		{% if redirect %}
+        <meta http-equiv="refresh" content="3;url={{ redirectUrl }}" />
+		{% endif %}
+    </head>
+    <body>
+        <h1>{{ feedback }}</h1>
+    </body>
+</html>

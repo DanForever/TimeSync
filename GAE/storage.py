@@ -47,10 +47,10 @@ class BetaKey( db.Model ):
 	id = blobstore.BlobReferenceProperty()
 
 class TemporaryAuthToken( db.Model ):
-	watchToken = db.StringProperty()
+	token = db.StringProperty()
 
-def CreateTemporaryAuthToken( watchToken, generatedToken ):
-	token = TemporaryAuthToken( key_name = generatedToken, watchToken = watchToken )
+def CreateTemporaryAuthToken( token, generatedToken ):
+	token = TemporaryAuthToken( key_name = generatedToken, token = token )
 	return token
 
 def CreateFacebookSubscription( fbuid, watchToken ):

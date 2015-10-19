@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TimeSync Facebook administration</title>
+    <link rel="stylesheet" href="/stylesheets/upload.css">
+  </head>
+  <body>
+    <h1>TimeSync Facebook administration</h1>
+    <table>
+      <tr>
+        <td>Url</td>
+        <td>Field</td>
+		<td>Object</td>
+		<td>Active</td>
+		<td>Action</td>
+      </tr>
+      {% for sub in subscriptions %}
+      {% for field in sub.fields %}
+      <tr>
+        <td>{{ sub.callback_url }}</td>
+		<td>{{ field }}</td>
+		<td>{{ sub.object }}</td>
+		<td>{{ sub.active }}</td>
+        <td>
+          <form action="{{ sub.unsubscribe.url }}" method="post">
+            <input type="hidden" name="object" value="{{ sub.object }}" />
+			{% if subscriptions.pageonly %}
+            <input type="hidden" name="field" value="{{ field }}" />
+			{% endif %}
+            <input type="submit" value="Unsubscribe" />
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+      {% endfor %}
+    </table>
+    
+	<form action="{{ subscribe.url }}" method="post">
+		<select name="object" onchange="
+		var element = document.getElementById('field');
+		element.setAttribute('list', this.value);
+		
+		var selectedField = document.getElementById(this.value);
+		element.parentNode.insertBefore(selectedField, element.nextSibling);
+		">
+			<option>page</option>
+			<option>user</option>
+		</select>
+		<div style="display: inline;">
+			<input id="field" name="field" list="page"/>
+			<datalist id="page">
+				<option>feed</option>
+				<option>ratings</option>
+				<option>name</option>
+				<option>picture</option>
+				<option>category</option>
+				<option>description</option>
+				<option>founded</option>
+				<option>company_overview</option>
+				<option>conversations</option>
+				<option>mission</option>
+				<option>products</option>
+				<option>general_info</option>
+				<option>location</option>
+				<option>hours</option>
+				<option>parking</option>
+				<option>public_transit</option>
+				<option>phone</option>
+				<option>email</option>
+				<option>website</option>
+				<option>attire</option>
+				<option>payment_options</option>
+				<option>culinary_team</option>
+				<option>general_manager</option>
+				<option>price_range</option>
+				<option>restaurant_services</option>
+				<option>restaurant_specialties</option>
+				<option>videos</option>
+				<option>release_date</option>
+				<option>genre</option>
+				<option>starring</option>
+				<option>screenplay_by</option>
+				<option>directed_by</option>
+				<option>produced_by</option>
+				<option>studio</option>
+				<option>awards</option>
+				<option>plot_outline</option>
+				<option>network</option>
+				<option>season</option>
+				<option>schedule</option>
+				<option>written_by</option>
+				<option>band_members</option>
+				<option>hometown</option>
+				<option>current_location</option>
+				<option>record_label</option>
+				<option>booking_agent</option>
+				<option>press_contact</option>
+				<option>artists_we_like</option>
+				<option>influences</option>
+				<option>band_interests</option>
+				<option>bio</option>
+				<option>affiliation</option>
+				<option>birthday</option>
+				<option>personal_info</option>
+				<option>personal_interests</option>
+				<option>members</option>
+				<option>built</option>
+				<option>features</option>
+				<option>mpg</option>
+				<option>checkins</option>
+				<option>productlists</option>
+				<option>leadgen</option>
+			</datalist>
+			<datalist id="user">
+				<option>about</option>
+				<option>about_me</option>
+				<option>activities</option>
+				<option>affiliations</option>
+				<option>allowed_restrictions</option>
+				<option>birthday</option>
+				<option>birthday_date</option>
+				<option>books</option>
+				<option>checkin_deal_claims</option>
+				<option>contact_email</option>
+				<option>current_location</option>
+				<option>education</option>
+				<option>education_history</option>
+				<option>email</option>
+				<option>email_hashes</option>
+				<option>events</option>
+				<option>family</option>
+				<option>feed</option>
+				<option>first_name</option>
+				<option>friend_request</option>
+				<option>has_added_app</option>
+				<option>hometown</option>
+				<option>hometown_location</option>
+				<option>hs_info</option>
+				<option>interests</option>
+				<option>is_app_user</option>
+				<option>is_blocked</option>
+				<option>last_name</option>
+				<option>likes</option>
+				<option>link</option>
+				<option>locale</option>
+				<option>location</option>
+				<option>meeting_for</option>
+				<option>meeting_sex</option>
+				<option>movies</option>
+				<option>music</option>
+				<option>name</option>
+				<option>notes_count</option>
+				<option>photos</option>
+				<option>pic</option>
+				<option>picture</option>
+				<option>pic_https</option>
+				<option>pic_with_logo</option>
+				<option>pic_big</option>
+				<option>pic_big_https</option>
+				<option>pic_big_with_logo</option>
+				<option>pic_small</option>
+				<option>pic_small_https</option>
+				<option>pic_small_with_logo</option>
+				<option>pic_square</option>
+				<option>pic_square_https</option>
+				<option>pic_square_with_logo</option>
+				<option>political_views</option>
+				<option>profile_blurb</option>
+				<option>profile_update_time</option>
+				<option>profile_url</option>
+				<option>proxied_email</option>
+				<option>quotes</option>
+				<option>relationship_status</option>
+				<option>religion</option>
+				<option>gender</option>
+				<option>sex</option>
+				<option>significant_other_id</option>
+				<option>statuses</option>
+				<option>timezone</option>
+				<option>television</option>
+				<option>tv</option>
+				<option>verified</option>
+				<option>videos</option>
+				<option>website</option>
+				<option>work</option>
+				<option>work_history</option>
+				<option>friends</option>
+				<option>platform</option>
+				<option>privacy</option>
+				<option>blocked</option>
+				<option>ip_optout</option>
+				<option>notifications</option>
+				<option>threads</option>
+			</datalist>
+		</div>
+		<input type="submit" value="Subscribe" />
+	</form>
+  </body>
+</html>
