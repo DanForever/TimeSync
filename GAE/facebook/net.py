@@ -1,6 +1,7 @@
 
 #system imports
 import datetime
+import logging
 
 #library imports
 import requests
@@ -34,7 +35,7 @@ def GetDeviceLoginCodeStatus( code ):
 		'code' : code
 	}
 	
-	response = requests.post( URL_BASE + URL_SUB_AUTH, params = payload )
+	response = requests.post( defines.URL_BASE + defines.URL_SUB_AUTH, params = payload )
 	
 	logging.debug( "Facebook Net GetNewDeviceLoginCode() Response:\n" + response.text )
 	return ( response.status_code, response.json() )
