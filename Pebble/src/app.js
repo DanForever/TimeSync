@@ -61,7 +61,7 @@ function FacebookSubscribeCallback( branch, action, success )
 	else
 	{
 		console.log( "FacebookSubscribeCallback() Failure!" );
-		var errorCard = new UI.Card( Menu.PleaseWait );
+		var errorCard = new UI.Card( Menu.Error.Unknown );
 		errorCard.show();
 		loadingCard.hide();
 	}
@@ -140,4 +140,4 @@ main.on
 	}
 );
 
-FetchTimelineToken( timelineToken );
+FetchTimelineToken();

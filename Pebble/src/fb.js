@@ -1,8 +1,7 @@
 
 var version = "v1";
 
-//var domain =  "https://timesync-1061.appspot.com/"
-var domain = "https://5d99b0a4.ngrok.io/";
+var domain =  "https://timesync-1061.appspot.com/"
 var baseUrl = domain + version + "/facebook/";
 
 function fbGetAuth( timelineToken, callback )
