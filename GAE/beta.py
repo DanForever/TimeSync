@@ -24,15 +24,15 @@ class UploadHandler( blobstore_handlers.BlobstoreUploadHandler ):
 	def post( self ):
 		
 		existingFile = storage.FindBetaKey()
-		logging.debug( "existingFile: " + str( existingFile ) )
-		logging.debug( "existingFile id: " + str( existingFile.id ) )
 		if existingFile is not None:
+			logging.debug( "existingFile: " + str( existingFile ) )
+			logging.debug( "existingFile id: " + str( existingFile.id ) )
 			blobstore.delete( existingFile.id.key() )
 		
 		blob_info = self.get_uploads()[ 0 ]
 		newFile = storage.CreateBetaKey( blob_info.key() )
 		newFile.put()
-		self.redirect( "/beta" )
+		self.redirect( "/beta/" )
 
 class DownloadHandler( blobstore_handlers.BlobstoreDownloadHandler ):
 	def get( self ):
