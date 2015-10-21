@@ -15,6 +15,7 @@
 #System Imports
 import logging
 import os
+from json import dumps as jsonToString
 
 #Google Imports
 import webapp2
@@ -148,7 +149,7 @@ class MainHandler( webapp2.RequestHandler ):
 			logging.error( stack )
 
 class DeleteHandler( webapp2.RequestHandler ):
-	def delete( self ):
+	def delete( self, version ):
 		if 'X-User-Token' not in self.request.headers:
 			self.response.set_status( requests.codes.unauthorized )
 			return
@@ -156,7 +157,11 @@ class DeleteHandler( webapp2.RequestHandler ):
 		storage.DeleteAllPinsForUser( self.request.headers[ 'X-User-Token' ] )
 		
 		self.response.set_status( requests.codes.ok )
-		
+		response = \
+		{
+			'status' : "success",
+		}
+		self.response.write( jsonToString( response ) )
 
 app = webapp2.WSGIApplication \
 (
@@ -168,7 +173,7 @@ app = webapp2.WSGIApplication \
 		webapp2.Route( '/beta/download/', beta.DownloadHandler ),
 		webapp2.Route( '/v<version:\d+>/callback/<handler:\w+>/', CallbackHandler, 'callback' ),
 		webapp2.Route( '/v<version:\d+>/<handler:\w+>/<branch:\w+>/<action:\w+>/', MainHandler ),
-		webapp2.Route( '/delete/', DeleteHandler ),
+		webapp2.Route( '/delete/v<version:\d+>/', DeleteHandler ),
 		webapp2.Route( '/admin/', AdminHandler ),
 		webapp2.Route( '/admin/<handler:\w+>/', AdminHandler, 'admin_handler' ),
 		webapp2.Route( '/admin/<handler:\w+>/<branch:\w+>/', AdminHandler, 'admin_branch' )

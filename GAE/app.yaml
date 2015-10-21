@@ -27,7 +27,7 @@ handlers:
 - url: .*
   script: main.app
 
-- url: /delete/
+- url: /delete/.*
   script: main.app
   secure: always
 

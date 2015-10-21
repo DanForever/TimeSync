@@ -104,6 +104,61 @@ function FacebookAuthCallback( auth )
 	loadingCard.hide();
 }
 
+
+function DeleteMyData()
+{
+	console.log( "DeleteMyData()" );
+	
+	var version = "v1";
+	var domain = "https://timesync-1061.appspot.com/";
+	var url = domain + "delete/" + version + "/";
+	
+	var headers =
+	{
+		"X-User-Token" : timelineToken,
+	};
+		
+	var ajax = require('ajax');
+	
+	ajax
+	(
+		{
+			url: url,
+			type: 'json',
+			method: 'delete',
+			headers : headers,
+		},
+		
+		function( data, status, request )
+		{
+			console.log( "SUCCESS! :D" );
+			console.log( "http: " + status );
+			console.log( "data: " + JSON.stringify( data, null, 4 ) );
+			
+			var cardData =
+			{
+				title: 'TimeSync',
+				subtitle: "Data deleted!"
+			};
+			
+			var dataDeletedCard = new UI.Card( cardData );
+			dataDeletedCard.show();
+			loadingCard.hide();
+		},
+		
+		function( data, status, request )
+		{
+			console.log( "Failure to delete data :(" );
+			console.log( "http: " + status );
+			console.log( "data: " + JSON.stringify( data, null, 4 ) );
+			
+			var errorCard = new UI.Card( Menu.Error.Unknown );
+			errorCard.show();
+			loadingCard.hide();
+		}
+	);
+}
+
 main.on
 (
 	'select',
@@ -134,8 +189,22 @@ main.on
 		}
 		else if( e.section == Menu.MainMenuItems.Trakt )
 		{
+			console.log( "e.section == Menu.MainMenuItems.Trakt" );
+			
 			var ucCard = new UI.Card( Menu.Error.UnderConstruction );
 			ucCard.show();
+		}
+		else if( e.section == Menu.MainMenuItems.Options )
+		{
+			console.log( "e.section == Menu.MainMenuItems.Options" );
+			
+			if( e.item == Menu.OptionsItems.Delete )
+			{
+				console.log( "e.item == Menu.OptionsItems.Delete" );
+				
+				loadingCard.show();
+				DeleteMyData();
+			}
 		}
 	}
 );

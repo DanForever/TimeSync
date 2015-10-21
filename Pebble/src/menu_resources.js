@@ -31,12 +31,27 @@ var mrTraktMainMenu =
 	]
 };
 
+var mrOptionsMenuDeleteData =
+{
+	title : "Delete my data",
+};
+
+var mrOptionsMainMenu =
+{
+	title : "Options",
+	items :
+	[
+		mrOptionsMenuDeleteData
+	]
+};
+
 var mrMainMenu =
 {
 	sections :
 	[
 		mrFacebookMainMenu,
-		mrTraktMainMenu
+		mrTraktMainMenu,
+		mrOptionsMainMenu
 	]
 };
 
@@ -59,6 +74,32 @@ var mrSubscribeMenu =
 			[
 				mrSubscribeMenuItem,
 				mrUnsubscribeMenuItem
+			]
+		}
+	]
+};
+
+var mrYesMenuItem =
+{
+	title : "Yes"
+};
+
+var mrNoMenuItem =
+{
+	title : "No"
+};
+
+var mrConfirmMenu =
+{
+	title : "Are you sure?",
+	sections :
+	[
+		{
+			items :
+			[
+				// No is at the top so that the user can't accidentally trigger it
+				mrNoMenuItem,
+				mrYesMenuItem
 			]
 		}
 	]
@@ -112,11 +153,13 @@ var wrapper =
 	MainMenu : mrMainMenu,
 	SubscribeMenu : mrSubscribeMenu,
 	PleaseWait : mrPleaseWait,
+	ConfirmMenu : mrConfirmMenu,
 	
 	MainMenuItems :
 	{
 		Facebook : mrFacebookMainMenu,
-		Trakt : mrTraktMainMenu
+		Trakt : mrTraktMainMenu,
+		Options: mrOptionsMainMenu
 	},
 	
 	FacebookItems :
@@ -124,11 +167,22 @@ var wrapper =
 		Events : mrFacebookMenuEvents,
 		Birthdays : mrFacebookMenuBirthdays
 	},
+	
+	OptionsItems :
+	{
+		Delete : mrOptionsMenuDeleteData
+	},
 
 	SubscribeMenuItems :
 	{
 		Subscribe : mrSubscribeMenuItem,
 		Unsubscribe : mrUnsubscribeMenuItem
+	},
+	
+	ConfirmMenuItems :
+	{
+		Yes : mrYesMenuItem,
+		No : mrNoMenuItem
 	},
 	
 	Error :
