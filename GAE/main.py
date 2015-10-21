@@ -12,15 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#System Imports
+import logging
+import os
+
+#Google Imports
 import webapp2
+from google.appengine.ext.webapp import template
+
+#Library Imports
+import requests
+
+#Project Imports
+import storage
+import beta
 import facebook
 import facebook.admin
 import facebook.callback
-import requests
-import logging
-import os
-import beta
-from google.appengine.ext.webapp import template
 
 class DefaultHandler( webapp2.RequestHandler ):
 	def get( self ):
@@ -139,6 +147,17 @@ class MainHandler( webapp2.RequestHandler ):
 			logging.error( "Unknown Error: " + str( e ) )
 			logging.error( stack )
 
+class DeleteHandler( webapp2.RequestHandler ):
+	def delete( self ):
+		if 'X-User-Token' not in self.request.headers:
+			self.response.set_status( requests.codes.unauthorized )
+			return
+		
+		storage.DeleteAllPinsForUser( self.request.headers[ 'X-User-Token' ] )
+		
+		self.response.set_status( requests.codes.ok )
+		
+
 app = webapp2.WSGIApplication \
 (
 	[
@@ -149,6 +168,7 @@ app = webapp2.WSGIApplication \
 		webapp2.Route( '/beta/download/', beta.DownloadHandler ),
 		webapp2.Route( '/v<version:\d+>/callback/<handler:\w+>/', CallbackHandler, 'callback' ),
 		webapp2.Route( '/v<version:\d+>/<handler:\w+>/<branch:\w+>/<action:\w+>/', MainHandler ),
+		webapp2.Route( '/delete/', DeleteHandler ),
 		webapp2.Route( '/admin/', AdminHandler ),
 		webapp2.Route( '/admin/<handler:\w+>/', AdminHandler, 'admin_handler' ),
 		webapp2.Route( '/admin/<handler:\w+>/<branch:\w+>/', AdminHandler, 'admin_branch' )

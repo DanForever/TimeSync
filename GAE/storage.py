@@ -17,6 +17,9 @@ from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 from google.appengine.ext import blobstore
 
+#System Imports
+import logging
+
 #A data descriptor that sets and returns values normally and prints a message logging their access.
 class RevealAccess(object):
 	def __init__( self, value ):
@@ -168,3 +171,13 @@ def FindPlatformAuthRequest( pebbleToken, platform ):
 
 def FindPlatformAccessCode( pebbleToken, platform ):
 	return FindChild( pebbleToken, platform, 'PlatformAccess' )
+	
+def DeleteAllPinsForUser( pebbleToken ):
+	logging.debug( "DeleteAllPinsForUser()" )
+	
+	parentKey = db.Key.from_path( 'Watch', pebbleToken )
+	pins = WatchPin.all()
+	pins.ancestor( parentKey )
+	
+	for pin in pins.run():
+		pin.delete()

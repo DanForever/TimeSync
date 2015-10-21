@@ -27,6 +27,10 @@ handlers:
 - url: .*
   script: main.app
 
+- url: /delete/
+  script: main.app
+  secure: always
+
 libraries:
 - name: webapp2
   version: "2.5.2"
