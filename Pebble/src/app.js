@@ -177,11 +177,6 @@ main.on
 				console.log( "e.items == Menu.FacebookItems.Events" );
 				facebookBranch = "events";
 			}
-			else if( e.item == Menu.FacebookItems.Birthdays )
-			{
-				console.log( "e.items == Menu.FacebookItems.Birthdays" );
-				facebookBranch = "birthdays";
-			}
 			
 			var fb = require( 'fb' );
 			fb.GetAuth( timelineToken, FacebookAuthCallback );

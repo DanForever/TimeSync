@@ -33,8 +33,7 @@ class Handler( base.Handler ):
 		branches = \
 		{
 			"auth" : self.GetAccess,
-			"events" : self.SubscribeEvents,
-			"birthdays" : self.SubscribeBirthdays
+			"events" : self.SubscribeEvents
 		}
 		
 		actions = \
@@ -66,21 +65,6 @@ class Handler( base.Handler ):
 		if action:
 			# Grab all the events for the user
 			events.Fetch( pebbleToken, fbSubData.key().name() )
-		
-		response = \
-		{
-			'status' : "success",
-		}
-		self.response.status = requests.codes.ok
-		self.response.data = jsonToString( response )
-		
-	def SubscribeBirthdays( self, pebbleToken, action ):
-		logging.debug( "SubscribeBirthdays()" )
-		
-		# update sub data
-		fbSubData = storage.FindFacebookSubscriptionByWatchToken( pebbleToken )
-		fbSubData.birthdays = action
-		fbSubData.put()
 		
 		response = \
 		{

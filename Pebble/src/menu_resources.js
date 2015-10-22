@@ -4,19 +4,12 @@ var mrFacebookMenuEvents =
 	subtitle : "Subscribe to facebook events"
 };
 
-var mrFacebookMenuBirthdays =
-{
-	title : "Birthdays",
-	subtitle : "Subscribe to your friends birthdays"
-};
-
 var mrFacebookMainMenu =
 {
 	title : "Facebook",
 	items :
 	[
-		mrFacebookMenuEvents,
-		mrFacebookMenuBirthdays
+		mrFacebookMenuEvents
 	]
 };
 
@@ -164,8 +157,7 @@ var wrapper =
 	
 	FacebookItems :
 	{
-		Events : mrFacebookMenuEvents,
-		Birthdays : mrFacebookMenuBirthdays
+		Events : mrFacebookMenuEvents
 	},
 	
 	OptionsItems :
