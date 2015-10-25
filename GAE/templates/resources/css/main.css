@@ -1,0 +1,79 @@
+@import url(../fonts/pfdindisplaypro-regular.woff);
+@import url(../fonts/ptsans-regular.woff);
+
+html, body
+{
+  height: 100%;
+  font-family: 'PF DinDisplay Pro', sans-serif;
+  font-weight: 300;
+  margin: 0px;
+}
+
+a
+{
+  text-decoration: none;
+  color:cornflowerblue;
+}
+
+a:hover
+{
+  color:deepskyblue;
+}
+
+p
+{
+  margin-top: 0px;
+}
+
+.container
+{
+  display: table;
+  height: 100%;
+  width: 100%;
+}
+
+.container .main
+{
+  display: table-column;
+}
+
+.container .side
+{
+  display: table-column;
+  background-color: #4cb4db;
+  width: 20%;
+}
+
+.centre
+{
+  width: 100%;
+}
+
+.centre img
+{
+  display: block;
+  margin: auto;
+}
+
+.container .row, .container .row-last
+{
+  display: table-row;
+}
+
+.container .row .cell
+{
+  height: 30px;
+  padding: 10px;
+}
+
+.container .row .cell
+{
+  display: table-cell;
+  vertical-align: top;
+}
+
+.container .row-last .cell
+{
+  display: table-cell;
+  vertical-align: bottom;
+}

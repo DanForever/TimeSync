@@ -30,10 +30,13 @@ import beta
 import facebook
 import facebook.admin
 import facebook.callback
+import trakt
 
 class DefaultHandler( webapp2.RequestHandler ):
 	def get( self ):
-		self.response.write( "Hello" )
+		path = "./templates/index.html"
+		values = {}
+		self.response.write( template.render( path, values ) )
 
 class AdminHandler( webapp2.RequestHandler ):
 	def get( self, **params ):
@@ -127,7 +130,8 @@ class MainHandler( webapp2.RequestHandler ):
 	
 		handlers = \
 		{
-			"facebook" : facebook
+			"facebook" : facebook,
+			"trakt" : trakt
 		}
 		
 		try:

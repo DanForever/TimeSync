@@ -5,6 +5,20 @@ api_version: 1
 threadsafe: yes
 
 handlers:
+
+- url: /pebble/.*resources/
+  static_dir: templates/pebble/resources/
+
+- url: /pebble/.*
+  script: pebble.app
+
+- url: .*/resources/
+  static_dir: templates/resources/
+
+- url: /privacy-policy/
+  static_files: templates/privacy.html
+  upload: templates/privacy.html
+
 - url: /favicon\.ico
   static_files: favicon.ico
   upload: favicon\.ico
@@ -22,14 +36,14 @@ handlers:
   secure: always
   
 - url: /stylesheets
-  static_dir: templates/stylesheets
-  
-- url: .*
-  script: main.app
+  static_dir: templates/resources/css
 
 - url: /delete/.*
   script: main.app
   secure: always
+  
+- url: .*
+  script: main.app
 
 libraries:
 - name: webapp2
