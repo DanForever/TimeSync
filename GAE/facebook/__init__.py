@@ -164,6 +164,16 @@ class Handler( base.Handler ):
 					'status' : "failure",
 					'message' : "Could not get user details",
 				}
+		elif loginCodeStatus[ 1 ][ 'error' ][ 'message' ] == "authorization_pending":
+		
+			self.response.status = requests.codes.ok
+			response = \
+			{
+				"status" : "require_auth",
+				"url" : authRequest.user_uri,
+				"code" : authRequest.user_code,
+				"interval" : authRequest.update_interval
+			}
 			
 		else:
 			self.response.status = requests.codes.bad_request
@@ -171,7 +181,7 @@ class Handler( base.Handler ):
 			response = \
 			{
 				'status' : "error",
-				'message' : status[ 1 ][ 'error' ][ 'message' ],
+				'message' : loginCodeStatus[ 1 ][ 'error' ][ 'message' ],
 				'user_code' : authRequest.user_code
 			}
 		
