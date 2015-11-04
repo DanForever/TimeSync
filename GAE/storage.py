@@ -91,7 +91,7 @@ def CreateWatch( access_token ):
 	
 	return watch
 
-def CreatePlatformAuthRequest( watch, platform, auth_code, user_code, user_uri, expires, update_interval ):
+def CreatePlatformAuthRequest( watch, platform, private_key, public_key, url, expires, interval ):
 	
 	request = PlatformAuthRequest \
 	(
@@ -102,11 +102,11 @@ def CreatePlatformAuthRequest( watch, platform, auth_code, user_code, user_uri, 
 		key_name = platform,
 		
 		# Auth request data
-		auth_code = auth_code,
-		user_code = user_code,
-		user_uri = user_uri,
+		auth_code = private_key,
+		user_code = public_key,
+		user_uri = url,
 		expires = expires,
-		update_interval = update_interval
+		update_interval = interval
 	)
 	
 	return request
