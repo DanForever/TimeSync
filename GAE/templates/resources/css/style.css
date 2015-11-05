@@ -1,0 +1,134 @@
+body {
+  font-family: Roboto, Helvetica, Arial, sans-serif;
+  font-weight: normal;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  position: relative;
+  box-sizing: border-box;
+  border-right: 15vw solid #00AAFF;
+  padding: 0 12vw;
+  overflow-x: hidden;
+}
+
+@media (max-width: 1000px) {
+  body {
+    padding: 0 10vw;
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    padding: 0 5vw;
+  }
+}
+
+/* headings */
+
+h1, h2, h3, h4, h5, h6, p, blockquote, pre, ul, ol, dl, figure {
+  margin-bottom: 30px;
+  margin-top: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Roboto Condensed";
+  font-weight: 700;
+  line-height: 1;
+}
+
+h1 {
+  font-weight: 700;
+  /*font-size: 76px;*/
+  font-size: 7vw;
+}
+
+h2 {
+  font-size: 28px;
+  font-weight: 400;
+  color: #555555;
+}
+
+/* timeline "pin" styles */
+
+.pin {
+  position: absolute;
+  margin: -6vw 0 -6vw 0;
+  width: 15vw;
+  right: -15vw;
+  border-top: 12px solid transparent;
+  z-index: 1;
+  text-align: center;
+  background-color: #00AAFF;
+}
+
+svg path {
+  fill: white !important;
+}
+
+.entypo svg {
+	width: 8vw;
+}
+
+.pin > img {
+  width: 12vw;
+}
+
+.pin::after {
+  content: '';
+  position: absolute;
+  left: -2.5vw;
+  z-index: -1;
+  top: 3.5vw;
+  width: 5vw;
+  height: 5vw;
+  background-color: #00AAFF;
+  -webkit-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+/* paragraph text */
+p, blockquote, pre, ul, ol, li, dl, figure {
+  letter-spacing: 0.1px;
+  line-height: 1.4;
+}
+
+.screenshot {
+  border: 4px solid black;
+  border-radius: 2px;
+  margin-right: 30px;
+}
+
+li {
+  margin-bottom: 15px;
+}
+
+/* links */
+a:link {
+  color: #0055FF; /* GColorBlueMoon */
+}
+
+a:visited {
+  color: #5555AA; /* GColorLiberty */
+}
+
+/* code */
+code {
+  font-family: Consolas, Menlo, Monaco, monospace;
+  display: block;
+  white-space: pre-line;
+  padding: 10px;
+  border: 2px solid #AAAAAA;
+  border-radius: 3px;
+  margin: 15px 0;
+}
+
+/* special styles for the first pin and title */
+h1:first-of-type {
+  padding-top: 30vh;
+}
+
+.pin:first-of-type {
+  top: calc(30vh + 3.5vw);
+  border-top: 0 none;
+}

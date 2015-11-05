@@ -1,0 +1,73 @@
+
+/* timeline introduction animation */
+body:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  background-color: #00AAFF;
+  -webkit-animation-iteration-count: 1;
+          animation-iteration-count: 1;
+  -webkit-animation-duration: .5s;
+          animation-duration: .5s;
+  -webkit-animation-name: timeline_intro;
+          animation-name: timeline_intro;
+}
+
+@-webkit-keyframes timeline_intro {
+  0%, 30% {
+    width: 100%;
+  }
+  100% {
+    width: 0;
+  }
+}
+
+@keyframes timeline_intro {
+  0%, 30% {
+    width: 100%;
+  }
+  100% {
+    width: 0;
+  }
+}
+
+/* content introduction animation */
+
+body > * {
+  -webkit-animation-iteration-count: 1;
+          animation-iteration-count: 1;
+  -webkit-animation-duration: 1s;
+          animation-duration: 1s;
+  -webkit-animation-fill-mode: forwards;
+          animation-fill-mode: forwards;
+  -webkit-animation-name: content_intro;
+          animation-name: content_intro;
+}
+
+@-webkit-keyframes content_intro {
+  0%, 50% {
+    opacity: 0;
+    -webkit-transform: translateY(100px);
+            transform: translateY(100px);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: translateY(0);
+            transform: translateY(0);
+  }
+}
+
+@keyframes content_intro {
+  0%, 50% {
+    opacity: 0;
+    -webkit-transform: translateY(100px);
+            transform: translateY(100px);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: translateY(0);
+            transform: translateY(0);
+  }
+}
