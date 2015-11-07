@@ -66,12 +66,18 @@ svg path {
   fill: white !important;
 }
 
-.entypo svg {
-	width: 8vw;
+.pin svg
+{
+	margin-top: 1vh;
 }
 
-.pin > img {
-  width: 12vw;
+.feather svg {
+	width: 10vw;
+	height: 10vw;
+}
+
+.entypo svg {
+	width: 8vw;
 }
 
 .pin::after {
