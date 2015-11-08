@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#library imports
+# library Imports
 import requests
 
+# Project Imports
+import auth.keys
 
 CONFIG = \
 {
@@ -23,7 +25,7 @@ CONFIG = \
 		# Add variables to the request
 		'request' :
 		{
-			( ( "params", ), "access_token" ) : "access_token"
+			( ( "params", ), "access_token" ) : auth.keys.ACCESS_TOKEN_KEY
 		}
 	},
 	

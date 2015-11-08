@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import absolute_import
+
 #library imports
 import requests
 
 #project imports
 import secrets.tvshowtime
-from .. import defines
+import tvshowtime.defines as defines
+import auth.keys
 
 PLATFORM = defines.PLATFORM
 
@@ -93,7 +96,7 @@ AUTH_KEY_POLL = \
 			'status' : requests.codes.ok,
 			'map' :
 			{
-				'access_token' : 'access_token'
+				auth.keys.ACCESS_TOKEN_KEY : "access_token"
 			}
 		},
 		
