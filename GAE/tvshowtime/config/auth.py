@@ -17,7 +17,7 @@ import requests
 
 #project imports
 import secrets.tvshowtime
-import defines
+from .. import defines
 
 PLATFORM = defines.PLATFORM
 
@@ -63,7 +63,14 @@ AUTH_KEY_REQUEST = \
 
 AUTH_KEY_POLL = \
 {
-	'private_key_entry' : ( [ "request", "data" ], "code" ),
+	'resolve' :
+	{
+		# Add variables to the request
+		'request' :
+		{
+			( ( "data", ), "code" ) : "private_key"
+		}
+	},
 	
 	'request' :
 	{

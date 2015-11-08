@@ -31,6 +31,7 @@ import facebook
 import facebook.admin
 import facebook.callback
 import trakt
+import tvshowtime
 
 class DefaultHandler( webapp2.RequestHandler ):
 	def get( self ):
@@ -131,7 +132,8 @@ class MainHandler( webapp2.RequestHandler ):
 		handlers = \
 		{
 			"facebook" : facebook,
-			"trakt" : trakt
+			"trakt" : trakt,
+			"tvshowtime" : tvshowtime
 		}
 		
 		try:
@@ -151,6 +153,7 @@ class MainHandler( webapp2.RequestHandler ):
 			stack = traceback.format_exc()
 			logging.error( "Unknown Error: " + str( e ) )
 			logging.error( stack )
+			self.response.set_status( requests.codes.internal_server_error )
 
 class DeleteHandler( webapp2.RequestHandler ):
 	def delete( self, version ):
