@@ -50,6 +50,19 @@ class Pin():
 		
 		self.headings = headings
 		self.paragraphs = paragraphs
+		
+		self.actions = []
+	
+	def AddAction( self, title, url, headers ):
+		action = \
+		{
+			'title' : title,
+			'type' : "http",
+			'url' : url,
+			'headers' : headers,
+		}
+		
+		self.actions.append( action )
 	
 	def Send( self ):
 		#Convert the python datetime object into an iso8601-ish format for the pebble api
@@ -89,6 +102,9 @@ class Pin():
 			data[ "duration" ] = self.duration
 			data[ "layout" ][ "type" ] = "calendarPin"
 		
+		if len( self.actions ) > 0:
+			data[ "actions" ] = self.actions
+		
 		# Construct the request config
 		config = \
 		{
@@ -118,7 +134,7 @@ class Pin():
 				{
 					'map' :
 					{
-						'errorCode' : "message"
+						'message' : "errorCode"
 					}
 				}
 			}
@@ -126,7 +142,4 @@ class Pin():
 		
 		response = net.MakeRequest( config )
 		
-		logging.debug( "PebblePin Send Status: " + str( response[ 0 ] ) )
-		logging.debug( "PebblePin Send message: " + str( response[ 1 ] ) )
-		
-		return ( response[ 0 ], "" )
+		return ( response[ 0 ], response[ 1 ] )
