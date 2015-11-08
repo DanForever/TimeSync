@@ -179,7 +179,7 @@ app = webapp2.WSGIApplication \
 		webapp2.Route( '/beta/upload/submit/', beta.UploadHandler ),
 		webapp2.Route( '/beta/download/', beta.DownloadHandler ),
 		webapp2.Route( '/v<version:\d+>/callback/<handler:\w+>/', CallbackHandler, 'callback' ),
-		webapp2.Route( '/v<version:\d+>/<handler:\w+>/<branch:\w+>/<action:\w+>/', MainHandler ),
+		webapp2.Route( '/v<version:\d+>/<handler:\w+>/<branch:\w+>/<action:\w+>/', MainHandler, 'mainhandler' ),
 		webapp2.Route( '/delete/v<version:\d+>/', DeleteHandler ),
 		webapp2.Route( '/admin/', AdminHandler ),
 		webapp2.Route( '/admin/<handler:\w+>/', AdminHandler, 'admin_handler' ),
