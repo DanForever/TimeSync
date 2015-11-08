@@ -23,6 +23,7 @@ import requests
 
 #Project imports
 import storage
+import net
 
 #config = \
 #{
@@ -82,32 +83,6 @@ import storage
 #		}
 #	}
 #}
-
-def SetDictEntry( source, config, value ):
-	path = config[ 0 ]
-	return reduce( dict.__getitem__, path, source ).update( { config[ 1 ] : value } )
-
-def FindDictEntry( source, path ):
-	return reduce( dict.__getitem__, path, source )
-	
-def MapResponse( map, response ):
-	out = {}
-	for key, value in map.iteritems():
-		out[ key ] = response[ value ]
-	return out
-
-def MakeRequest( config ):
-	response = requests.request( **config[ "request" ] )
-	responseObject = response.json()
-	
-	successConfig = config[ "response" ][ "success" ]
-	if response.status_code == successConfig[ "status" ] and successConfig[ "exists" ] in responseObject:
-		out = MapResponse( successConfig[ "map" ], responseObject )
-		status = requests.codes.ok
-	else:
-		out = MapResponse( config[ "response" ][ "failure" ][ "map" ], responseObject )
-		status = requests.codes.bad_request
-	return ( status, out )
 
 def StoreAccess( pebbleToken, params, platform ):
 	params[ "watch" ] = storage.CreateWatch( pebbleToken )
@@ -189,10 +164,15 @@ def CheckRequest( pebbleToken, configLib, createIfRequired ):
 		config = configLib.AUTH_KEY_POLL
 		
 		# Fill in the private key in the poll configuration
-		SetDictEntry( config, config[ "private_key_entry" ], authRequest.auth_code )
+		db = \
+		{
+			"private_key" : authRequest.auth_code
+		}
 		
 		# Poll the server to check on the status of the authorisation process
-		response = MakeRequest( config )
+		response = net.MakeRequest( config, db )
+		
+		logging.debug( "CheckRequest() response: " + str( response ) )
 		
 		if response[ 0 ] == requests.codes.ok:
 			# The user has entered the pin into the service platform, store the resultant access token
@@ -202,7 +182,7 @@ def CheckRequest( pebbleToken, configLib, createIfRequired ):
 
 	elif createIfRequired:
 		# Send a new authorisation request to the specified service platform
-		response = MakeRequest( configLib.AUTH_KEY_REQUEST )
+		response = net.MakeRequest( configLib.AUTH_KEY_REQUEST )
 		
 		# Store the authorisation request details
 		authRequest = StoreRequest( pebbleToken, response[ 1 ], configLib.PLATFORM )
