@@ -42,7 +42,10 @@ def Resolve( type, config, db ):
 		return
 	
 	for path in source:
-		SetDictEntry( dest, path, db[ path[ 1 ] ] )
+		dbKey = source[ path ]
+		value = db[ dbKey ]
+		
+		SetDictEntry( dest, path, value )
 
 def MakeRequest( config, db = None ):
 	if db is not None:
