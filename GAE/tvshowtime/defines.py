@@ -15,3 +15,5 @@
 PLATFORM = "tvshowtime"
 
 PEBBLE_ICON = "system://images/TV_SHOW"
+
+PEBBLE_PIN_ACT_EP_KEY = "Tvst-Epid"
