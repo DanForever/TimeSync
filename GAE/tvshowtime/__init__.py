@@ -59,7 +59,9 @@ class Handler( base.Handler ):
 		import storage
 		import net
 		import config.agenda
-
+		import pebble
+		from datetime import datetime
+		
 		platformAccess = storage.FindPlatformAccessCode( pebbleToken, defines.PLATFORM )
 		
 		if platformAccess is None:
@@ -75,12 +77,37 @@ class Handler( base.Handler ):
 		response = net.MakeRequest( config.agenda.CONFIG, db )
 		
 		for episode in response[ 1 ][ "episodes" ]:
-			logging.debug( "Show: " + episode[ "show" ][ "name" ] );
-			logging.debug( "Network: " + episode[ "network" ] );
-			logging.debug( "Name: " + episode[ "name" ] );
-			logging.debug( "Airs: " + episode[ "air_date" ] );
-			logging.debug( "Id: " + str( episode[ "id" ] ) );
-			logging.debug( "EpNum: " + str( episode[ "season_number" ] ) + "x" + str( episode[ "number" ] ) );
+			id = "ts-tvst-agenda-" + str( episode[ "id" ] )
+			timeStr = episode[ "air_date" ] + " " + episode[ "air_time" ]
+			subtitle = episode[ "network" ]
+			
+			headings = \
+			[
+				"Title",
+				"Number"
+			]
+			
+			paragraphs = \
+			[
+				episode[ "name" ],
+				"S{0:02n}E{1:02n}".format( episode[ "season_number" ], episode[ "number" ] )
+			]
+			
+			try:
+				time = datetime.strptime( timeStr, "%Y-%m-%d %H:%M" )
+			except Exception as first:
+				try:
+					time = datetime.strptime( timeStr, "%Y-%m-%d %I:%M %p" )
+				except Exception as second:
+					logging.error( "Failed to convert as 24 hour clock: " + str( first ) )
+					logging.error( "Failed to convert as 12 hour clock: " + str( second ) )
+					
+					#Can't deal with this pin for some reason, move onto the next one
+					continue
+			
+			pin = pebble.Pin( pebbleToken, id, time, episode[ "show" ][ "name" ], defines.PEBBLE_ICON, subtitle = subtitle, headings = headings, paragraphs = paragraphs )
+			
+			pin.Send()
 		
 		self.response.status = response[ 0 ]
 		

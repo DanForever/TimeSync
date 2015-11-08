@@ -13,3 +13,5 @@
 # limitations under the License.
 
 PLATFORM = "tvshowtime"
+
+PEBBLE_ICON = "system://images/TV_SHOW"
