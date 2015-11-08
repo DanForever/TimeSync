@@ -25,3 +25,19 @@ class Handler():
 		self.response = HTTPResponse()
 		self.app = app
 		self.request = request
+		
+	def GetUrl( self, handler, params ):
+		
+		params[ "version" ]	= 1
+		params[ "_full" ]	= True
+		params[ "_scheme" ] = "https"
+		
+		url = self.app.router.build \
+		(
+			self.request,
+			handler,
+			(),
+			params
+		)
+		
+		return url
