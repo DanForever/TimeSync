@@ -111,7 +111,7 @@ def CreatePlatformAuthRequest( watch, platform, private_key, public_key, url, ex
 	
 	return request
 
-def CreateAccess( watch, platform, access_token ):
+def CreateAccess( watch, platform, platform_token ):
 	
 	access = PlatformAccess \
 	(
@@ -122,7 +122,7 @@ def CreateAccess( watch, platform, access_token ):
 		key_name = platform,
 		
 		# The code that gives us access to this user's facebook data
-		token = access_token
+		token = platform_token
 	)
 	
 	return access
