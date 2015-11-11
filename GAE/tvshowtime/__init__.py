@@ -60,9 +60,12 @@ class Handler( base.Handler ):
 		
 		response = auth.devices.GetAccess( pebbleToken, "tvshowtime.config.auth", action )
 		
+		outdata = response[ 1 ]
+		
 		#Fetch and store username
 		if response[ 0 ] == requests.codes.ok:
-			self.User( pebbleToken, response[ 2 ] )
+			user = self.User( pebbleToken, response[ 2 ] )
+			outdata[ "name" ] = user.name
 		
 		self.response.status = response[ 0 ]
 		self.response.data = response[ 1 ]
@@ -70,6 +73,7 @@ class Handler( base.Handler ):
 	def Subscribe( self, pebbleToken, action ):
 		if self.CreateConfigDB( pebbleToken ) is None:
 			self.response.status = requests.codes.unauthorized
+			self.response.data = { 'status' : "require_auth" }
 			return
 		
 		if action:
@@ -77,3 +81,4 @@ class Handler( base.Handler ):
 		else: 
 			storage.DeleteSubscription( pebbleToken )
 		self.response.status = requests.codes.ok
+		self.response.data = { 'status' : "success" }
