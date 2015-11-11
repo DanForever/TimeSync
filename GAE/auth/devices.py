@@ -16,7 +16,6 @@
 import logging
 import importlib
 import datetime
-from json import dumps as jsonToString
 
 #library imports
 import requests
@@ -24,65 +23,6 @@ import requests
 #Project imports
 import storage
 import net
-
-#config = \
-#{
-#	'url' : defines.URL_BASE + defines.URL_SUB_AUTH,
-#	'out_map' :
-#	{
-#		
-#	}
-#	
-#	'in_map' :
-#	{
-#		
-#	}
-#}
-#
-#{
-#  "code": "92a2b2e351f2b0b3503b2de251132f47",
-#  "user_code": "A1NWZ9",
-#  "verification_uri": "https://www.facebook.com/device",
-#  "expires_in": 420,
-#  "interval": 5
-#}
-#
-#{
-#    "result": "OK",
-#    "device_code": "_5B0ITpBvqY2kn5wT4ry",
-#    "user_code": "3643-51a4",
-#    "verification_url": "https://www.tvshowtime.com/activate",
-#    "expires_in": 900,
-#    "interval": 5
-#}
-#
-## TV Showtime
-#config = \
-#{
-#	'request' :
-#	{
-#		'url' : "https://api.tvshowtime.com/v1/oauth/device/code",
-#		'method' : 'POST',
-#		
-#		# form encoded
-#		'data' :
-#		{
-#			'client_id' : "Jv4oAhmEZfWehOZMXuJ5"
-#		}
-#	}
-#	
-#	'response' :
-#	{
-#		requests.codes.ok :
-#		{
-#			'public_key' : "user_code",
-#			'private_key' : "device_code",
-#			'url' : "verification_url",
-#			'expires' : "expires_in",
-#			'interval' : "interval"
-#		}
-#	}
-#}
 
 def StoreAccess( pebbleToken, params, platform ):
 	params[ "watch" ] = storage.CreateWatch( pebbleToken )
@@ -144,11 +84,11 @@ def GenerateResponse( authRequest ):
 			"error" : "No authorisation code found"
 		}
 		
-	return ( status, jsonToString( response ), authRequest )
+	return ( status, response, authRequest )
 
 def StandardSuccessReturn( platformAccess ):
 	response = { 'status' : "success" }
-	return ( requests.codes.ok, jsonToString( response ), platformAccess )
+	return ( requests.codes.ok, response, platformAccess )
 
 def CheckRequest( pebbleToken, configLib, createIfRequired ):
 	# See if we've already got an authorisation request pending
