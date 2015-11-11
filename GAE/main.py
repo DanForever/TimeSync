@@ -141,7 +141,12 @@ class MainHandler( webapp2.RequestHandler ):
 			
 			self.response.set_status( handler.response.status )
 			
-			self.response.write( handler.response.data )
+			if isinstance( handler.response.data, str ):
+				data = handler.response.data
+			else:
+				data = jsonToString( handler.response.data )
+			
+			self.response.write( data )
 			self.response.headers[ "Content-Type" ] = "application/json"
 			
 		except requests.exceptions.RequestException as e:
