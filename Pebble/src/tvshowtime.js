@@ -4,7 +4,7 @@ var auth_config =
 {
 	"request" :
 	{
-		url: defines.Domain + "v1/facebook/auth/request/",
+		url: defines.Domain + "v1/tvshowtime/auth/request/",
 		type: 'json',
 		method: 'post',
 		headers : {},
@@ -30,7 +30,7 @@ var subscribe_config =
 {
 	"request" :
 	{
-		url: defines.Domain + "v1/facebook/events/subscribe/",
+		url: defines.Domain + "v1/tvshowtime/subscribe/subscribe/",
 		type: 'json',
 		method: 'post',
 		headers : {},
@@ -47,7 +47,7 @@ var unsubscribe_config =
 {
 	"request" :
 	{
-		url: defines.Domain + "v1/facebook/events/unsubscribe/",
+		url: defines.Domain + "v1/tvshowtime/subscribe/unsubscribe/",
 		type: 'json',
 		method: 'post',
 		headers : {},

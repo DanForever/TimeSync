@@ -1,7 +1,6 @@
 var mrFacebookMenuEvents =
 {
-	title : "Events",
-	subtitle : "Subscribe to facebook events"
+	title : "Events"
 };
 
 var mrFacebookMainMenu =
@@ -10,6 +9,20 @@ var mrFacebookMainMenu =
 	items :
 	[
 		mrFacebookMenuEvents
+	]
+};
+
+var mrTVShowTimeAgenda =
+{
+	title : "Agenda"
+};
+
+var mrTVShowTimeMainMenu =
+{
+	title : "TVShow Time",
+	items :
+	[
+		mrTVShowTimeAgenda
 	]
 };
 
@@ -43,7 +56,8 @@ var mrMainMenu =
 	sections :
 	[
 		mrFacebookMainMenu,
-		mrTraktMainMenu,
+		mrTVShowTimeMainMenu,
+		//mrTraktMainMenu,
 		mrOptionsMainMenu
 	]
 };
@@ -151,6 +165,7 @@ var wrapper =
 	MainMenuItems :
 	{
 		Facebook : mrFacebookMainMenu,
+		TVShowTime : mrTVShowTimeMainMenu,
 		Trakt : mrTraktMainMenu,
 		Options: mrOptionsMainMenu
 	},
@@ -158,6 +173,11 @@ var wrapper =
 	FacebookItems :
 	{
 		Events : mrFacebookMenuEvents
+	},
+	
+	TVShowTimeItems :
+	{
+		Agenda : mrTVShowTimeAgenda
 	},
 	
 	OptionsItems :
@@ -185,7 +205,14 @@ var wrapper =
 		Unknown: mrErrorUnknown
 	},
 	
-	GetAuthRequest : mrAuthRequest
+	GetAuthRequest : mrAuthRequest,
+	
+	Title :
+	{
+		"fb" : "Facebook",
+		"tvshowtime" : "TVShow Time",
+		"trakt" : "Trakt.tv"
+	}
 };
 
 this.exports = wrapper;

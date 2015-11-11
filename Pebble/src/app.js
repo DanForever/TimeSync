@@ -5,7 +5,9 @@ var timelineToken = null;
 var main = new UI.Menu( Menu.MainMenu );
 var loadingCard = new UI.Card( Menu.PleaseWait );
 var subscribeMenu = new UI.Menu( Menu.SubscribeMenu );
-var facebookBranch = "";
+var authRequestCard = null;
+var authRequestTimeout = null;
+var ignoreAuthCallback = true;
 
 function FetchTimelineToken()
 {
@@ -40,123 +42,147 @@ function FetchTimelineToken()
 	return true;
 }
 
-function FacebookSubscribeCallback( branch, action, success )
+function deleteMyDataCallback( results )
 {
-	if( success )
+	if( results.status == "success" )
 	{
-		console.log( "FacebookSubscribeCallback() Success!" );
-		
-		var actionStr = ( action == "subscribe" )? "Subscribed to" : "Unsubscribed from";
-		
 		var cardData =
 		{
 			title: 'TimeSync',
-			subtitle: actionStr + ' Facebook ' + branch
+			subtitle: "Data deleted!"
 		};
-		
-		var subscribedCard = new UI.Card( cardData );
-		subscribedCard.show();
+
+		var dataDeletedCard = new UI.Card( cardData );
+		dataDeletedCard.show();
 		loadingCard.hide();
 	}
 	else
-	{
-		console.log( "FacebookSubscribeCallback() Failure!" );
+	{			
 		var errorCard = new UI.Card( Menu.Error.Unknown );
 		errorCard.show();
 		loadingCard.hide();
 	}
 }
 
-function FacebookSubscribeOn( e )
+function subscriptionSuccessCallback( libname, data )
 {
-	var fb = require( 'fb' );
-	if( e.item == Menu.SubscribeMenuItems.Subscribe )
+	var cardConfig =
 	{
-		fb.Subscribe( timelineToken, facebookBranch, FacebookSubscribeCallback );
-		loadingCard.show();
-	}
-	else if( e.item == Menu.SubscribeMenuItems.Unsubscribe )
-	{
-		fb.Unsubscribe( timelineToken, facebookBranch, FacebookSubscribeCallback );
-		loadingCard.show();
-	}
-}
-
-function FacebookAuthCallback( auth )
-{
-	if( auth.hasAccess )
-	{
-		subscribeMenu.on( 'select', FacebookSubscribeOn );
-		subscribeMenu.show();
-		loadingCard.hide();
-	}
-	else if( auth.hasCode )
-	{
-		var authRequestCard = new UI.Card( Menu.GetAuthRequest( auth.url, auth.code ) );
-		authRequestCard.show();
-	}
-	else
-	{
-		var authErrorCard = new UI.Card( Menu.Error.NoAuth );
-		authErrorCard.show();
-	}
+		title: Menu.Title[ libname ],
+		style: "small",
+		body: "Success"
+	};
 	
+	var card = new UI.Card( cardConfig );
+	card.show();
 	loadingCard.hide();
 }
 
-
-function DeleteMyData()
+function subscriptionFailureCallback( libname, data )
 {
-	console.log( "DeleteMyData()" );
-	
-	var version = "v1";
-	var domain = "https://timesync-1061.appspot.com/";
-	var url = domain + "delete/" + version + "/";
-	
-	var headers =
+	var cardConfig =
 	{
-		"X-User-Token" : timelineToken,
+		title: Menu.Title[ libname ],
+		style: "small",
+		body: "Something went wrong configuring your subscription settings :("
 	};
-		
-	var ajax = require('ajax');
 	
-	ajax
-	(
-		{
-			url: url,
-			type: 'json',
-			method: 'delete',
-			headers : headers,
-		},
+	var card = new UI.Card( cardConfig );
+	card.show();
+	loadingCard.hide();
+}
+
+function hasAuthCallback( libname, data )
+{
+	var callback = function( e )
+	{
+		var subscribe = require( 'subscribe' );
 		
-		function( data, status, request )
+		if( e.item == Menu.SubscribeMenuItems.Subscribe )
 		{
-			console.log( "SUCCESS! :D" );
-			console.log( "http: " + status );
-			console.log( "data: " + JSON.stringify( data, null, 4 ) );
-			
-			var cardData =
-			{
-				title: 'TimeSync',
-				subtitle: "Data deleted!"
-			};
-			
-			var dataDeletedCard = new UI.Card( cardData );
-			dataDeletedCard.show();
-			loadingCard.hide();
-		},
-		
-		function( data, status, request )
-		{
-			console.log( "Failure to delete data :(" );
-			console.log( "http: " + status );
-			console.log( "data: " + JSON.stringify( data, null, 4 ) );
-			
-			var errorCard = new UI.Card( Menu.Error.Unknown );
-			errorCard.show();
-			loadingCard.hide();
+			subscribe.Subscribe( timelineToken, libname, subscriptionSuccessCallback, subscriptionFailureCallback );
+			loadingCard.show();
 		}
+		else if( e.item == Menu.SubscribeMenuItems.Unsubscribe )
+		{
+			subscribe.Unsubscribe( timelineToken, libname, subscriptionSuccessCallback, subscriptionFailureCallback );
+			loadingCard.show();
+		}
+	};
+	
+	console.log( "User Authorised: " + data.name );
+	
+	subscribeMenu.on( 'select', callback );
+	subscribeMenu.show();
+	loadingCard.hide();
+	if( authRequestCard !== null )
+	{
+		authRequestCard.hide();
+		authRequestCard = null;
+	}
+}
+
+function awaitingAuthCallback( libname, data )
+{
+	if( ignoreAuthCallback )
+	{
+		return;
+	}
+	
+	var cardConfig =
+	{
+		title: Menu.Title[ libname ],
+		style: "mono",
+		body: data.url + "\n" + data.code
+	};
+	
+	if( authRequestCard === null )
+	{
+		authRequestCard = new UI.Card( cardConfig );
+		
+		authRequestCard.on
+		(
+			'hide',
+			function()
+			{
+				console.log('Hidden!');
+				ignoreAuthCallback = true;
+
+				if( authRequestTimeout !== null )
+				{
+					clearTimeout( authRequestTimeout );
+					authRequestTimeout = null;
+				}
+			}
+		);
+		
+		authRequestCard.show();
+		loadingCard.hide();
+	}
+	
+	authRequestTimeout = setTimeout
+	(
+		function()
+		{
+			var auth = require( 'auth' );
+			auth.Auth( timelineToken, libname, hasAuthCallback, awaitingAuthCallback, authErrorCallback );
+		},
+		data.interval * 1000
 	);
+}
+
+function authErrorCallback( libname, data )
+{
+	var errorCardConfig =
+	{
+		title: Menu.Title[ libname ],
+		subtitle: 'Something went wrong :(',
+		body: 'There was a problem getting authorisation'
+	};
+	
+	var authErrorCard = new UI.Card( errorCardConfig );
+	authErrorCard.show();
+	loadingCard.hide();
 }
 
 main.on
@@ -165,22 +191,20 @@ main.on
 	function( e )
 	{
 		console.log( "main.on()" );
+		var auth = require( 'auth' );
 		
-		if( e.section == Menu.MainMenuItems.Facebook )
+		if( e.item == Menu.FacebookItems.Events )
 		{
-			console.log( "e.section == Menu.MainMenuItems.Facebook" );
-			
-			console.log( e.item );
-			
-			if( e.item == Menu.FacebookItems.Events )
-			{
-				console.log( "e.items == Menu.FacebookItems.Events" );
-				facebookBranch = "events";
-			}
-			
-			var fb = require( 'fb' );
-			fb.GetAuth( timelineToken, FacebookAuthCallback );
+			console.log( "e.items == Menu.FacebookItems.Events" );
+			ignoreAuthCallback = false;
+			auth.Auth( timelineToken, "fb", hasAuthCallback, awaitingAuthCallback, authErrorCallback );
 			loadingCard.show();
+		}
+		else if( e.item == Menu.TVShowTimeItems.Agenda )
+		{
+			console.log( "e.item == Menu.TVShowTimeItems.Agenda" );
+			ignoreAuthCallback = false;
+			auth.Auth( timelineToken, "tvshowtime", hasAuthCallback, awaitingAuthCallback, authErrorCallback );
 		}
 		else if( e.section == Menu.MainMenuItems.Trakt )
 		{
@@ -197,8 +221,12 @@ main.on
 			{
 				console.log( "e.item == Menu.OptionsItems.Delete" );
 				
+				var request = require( 'request' );
+				var deleteme = require( 'deleteme' );
+				
+				request.Request( timelineToken, deleteme.Config.Data, deleteMyDataCallback );
+				
 				loadingCard.show();
-				DeleteMyData();
 			}
 		}
 	}
