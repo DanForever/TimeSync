@@ -15,79 +15,43 @@
 # Imports from the world of tomorrow
 from __future__ import absolute_import
 
-#library imports
+# library Imports
 import requests
 
-#Project Imports
-from .. import defines
+# Project Imports
 import auth.keys
 
-WATCH = \
+USER_KEY = "user_"
+
+CONFIG = \
 {
 	'resolve' :
 	{
 		# Add variables to the request
 		'request' :
 		{
-			( ( "params", ), "access_token" ) : auth.keys.ACCESS_TOKEN_KEY,
-			( ( "data", ), "episode_id" ) : defines.PEBBLE_PIN_ACT_EP_KEY
+			( ( "params", ), "access_token" ) : auth.keys.ACCESS_TOKEN_KEY
 		}
 	},
 	
 	'request' :
 	{
-		'url' : "https://api.tvshowtime.com/v1/checkin",
-		'method' : "POST",
+		'url' : "https://api.tvshowtime.com/v1/user",
+		'method' : "GET",
 		
-		'params' : {},
-		'data' : {}
+		'params' : {}
 	},
 	
 	'response' :
 	{
 		'success' :
 		{
+			'exists' : "user",
 			'status' : requests.codes.ok,
-			'map' : {}
-		},
-		
-		'failure' :
-		{
 			'map' :
 			{
-				'error' : "message"
+				USER_KEY : "user"
 			}
-		}
-	}
-}
-
-UNWATCH = \
-{
-	'resolve' :
-	{
-		# Add variables to the request
-		'request' :
-		{
-			( ( "params", ), "access_token" ) : auth.keys.ACCESS_TOKEN_KEY,
-			( ( "data", ), "episode_id" ) : defines.PEBBLE_PIN_ACT_EP_KEY
-		}
-	},
-	
-	'request' :
-	{
-		'url' : "https://api.tvshowtime.com/v1/checkout",
-		'method' : "POST",
-		
-		'params' : {},
-		'data' : {}
-	},
-	
-	'response' :
-	{
-		'success' :
-		{
-			'status' : requests.codes.ok,
-			'map' : {}
 		},
 		
 		'failure' :

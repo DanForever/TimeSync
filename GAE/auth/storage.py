@@ -14,20 +14,6 @@
 
 #Google Imports
 from google.appengine.ext import db
-from google.appengine.ext.db import polymodel
-from google.appengine.ext import blobstore
-
-#System Imports
-import logging
-
-#A data descriptor that sets and returns values normally and prints a message logging their access.
-class RevealAccess(object):
-	def __init__( self, value ):
-		self.val = value
-	def __get__( self, obj, objtype ):
-		return self.val
-	def __set__( self, obj, val ):
-		pass
 
 class Watch( db.Model ):
 	blarg = db.StringProperty()
@@ -51,44 +37,8 @@ class PlatformAuthRequest( db.Model ):
 class PlatformAccess( db.Model ):
 	token = db.StringProperty()
 
-class WatchPin( db.Model ):
-	title = db.StringProperty()
-	body = db.StringProperty( multiline = True )
-	start_time = db.DateTimeProperty()
-
-class FacebookSubscription( db.Model ):
-	watchToken = db.StringProperty()
-	events = db.BooleanProperty()
-	birthdays = db.BooleanProperty()
-
-class BetaKey( db.Model ):
-	id = blobstore.BlobReferenceProperty()
-
-class TemporaryAuthToken( db.Model ):
-	token = db.StringProperty()
-
-def CreateTemporaryAuthToken( token, generatedToken ):
-	token = TemporaryAuthToken( key_name = generatedToken, token = token )
-	return token
-
-def CreateFacebookSubscription( fbuid, watchToken ):
-	entry = FacebookSubscription \
-	(
-		key_name = fbuid,
-		watchToken = watchToken,
-		events = False,
-		birthdays = False
-	)
-	
-	return entry
-
-def CreateBetaKey( key ):
-	betaKey = BetaKey( key_name = "Key", id = key )
-	return betaKey
-
 def CreateWatch( access_token ):
 	watch = Watch( key_name = access_token )
-	
 	return watch
 
 def CreatePlatformAuthRequest( watch, platform, private_key, public_key, url, expires, interval ):
@@ -127,38 +77,6 @@ def CreateAccess( watch, platform, platform_token ):
 	
 	return access
 
-def CreateWatchPin( watch, id, title, body, start_time ):
-	
-	pin = WatchPin \
-	(
-		parent = watch,
-		
-		key_name = id,
-		
-		title = title,
-		body = body,
-		start_time = start_time
-	)
-	
-	return pin
-
-def FindTemporaryAuthToken( token ):
-	key = db.Key.from_path( 'TemporaryAuthToken', token )
-	return db.get( key )
-
-def FindBetaKey():
-	key = db.Key.from_path( 'BetaKey', "Key" )
-	return db.get( key )
-
-def FindFacebookSubscriptionByWatchToken( watchToken ):
-	query = FacebookSubscription.all()
-	query.filter( "watchToken =", watchToken )
-	return query.get()
-	
-def FindFacebookSubscription( fbuid ):
-	key = db.Key.from_path( 'FacebookSubscription', fbuid )
-	return db.get( key )
-	
 def FindChild( pebbleToken, platform, childType ):
 	parentKey = db.Key.from_path( 'Watch', pebbleToken )
 	key = db.Key.from_path( childType, platform, parent = parentKey )
@@ -171,13 +89,3 @@ def FindPlatformAuthRequest( pebbleToken, platform ):
 
 def FindPlatformAccessCode( pebbleToken, platform ):
 	return FindChild( pebbleToken, platform, 'PlatformAccess' )
-	
-def DeleteAllPinsForUser( pebbleToken ):
-	logging.debug( "DeleteAllPinsForUser()" )
-	
-	parentKey = db.Key.from_path( 'Watch', pebbleToken )
-	pins = WatchPin.all()
-	pins.ancestor( parentKey )
-	
-	for pin in pins.run():
-		pin.delete()

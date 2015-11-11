@@ -22,7 +22,7 @@ import requests
 from google.appengine.ext.webapp import template
 
 #Project imports
-import base
+import common.base
 import secrets.facebook
 import defines
 import storage
@@ -38,7 +38,7 @@ def NetGetRealTimeSubscriptions():
 	response = requests.get( url = url, params = payload )
 	return ( response.status_code, response.json() )
 
-class Handler( base.Handler ):
+class Handler( common.base.Handler ):
 	def Main( self ):
 		logging.debug( "Facebook Admin Main()" )
 		

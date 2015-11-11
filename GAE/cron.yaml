@@ -1,0 +1,4 @@
+cron:
+- description: Update TV Showtime subscribers
+  url: /cron/tvshowtime/
+  schedule: every 24 hours

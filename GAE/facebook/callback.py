@@ -21,13 +21,13 @@ from json import loads as stringToJson
 import requests
 
 #Project imports
-import base
+import common.base
 import secrets.facebook
 import storage
 import defines
 import events
 
-class Handler( base.Handler ):
+class Handler( common.base.Handler ):
 	def Get( self ):
 		logging.debug( "Facebook callback handler Get(): " + str( self.request.GET ) )
 

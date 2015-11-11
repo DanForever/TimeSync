@@ -89,13 +89,7 @@ def StoreAccess( pebbleToken, params, platform ):
 	params[ "platform" ] = platform
 	access = storage.CreateAccess( **params )
 	access.put()
-
-def HasAccess( pebbleToken, platform ):
-	accessToken = storage.FindPlatformAccessCode( pebbleToken, platform )
-	
-	if accessToken is not None:
-		return True
-	return False
+	return access
 
 def GetExistingRequest( pebbleToken, platform ):
 	# Find an auth request for the specified pebble
@@ -143,18 +137,18 @@ def GenerateResponse( authRequest ):
 			"interval" : authRequest.update_interval
 		}
 	else:
-		status = requests.codes.bad_request
+		status = requests.codes.unauthorized
 		response = \
 		{
 			"status" : "no_auth",
 			"error" : "No authorisation code found"
 		}
 		
-	return ( status, jsonToString( response ) )
+	return ( status, jsonToString( response ), authRequest )
 
-def StandardSuccessReturn():
+def StandardSuccessReturn( platformAccess ):
 	response = { 'status' : "success" }
-	return ( requests.codes.ok, jsonToString( response ) )
+	return ( requests.codes.ok, jsonToString( response ), platformAccess )
 
 def CheckRequest( pebbleToken, configLib, createIfRequired ):
 	# See if we've already got an authorisation request pending
@@ -176,9 +170,9 @@ def CheckRequest( pebbleToken, configLib, createIfRequired ):
 		
 		if response[ 0 ] == requests.codes.ok:
 			# The user has entered the pin into the service platform, store the resultant access token
-			StoreAccess( pebbleToken, response[ 1 ], configLib.PLATFORM )
+			platformAccess = StoreAccess( pebbleToken, response[ 1 ], configLib.PLATFORM )
 			
-			return StandardSuccessReturn()
+			return StandardSuccessReturn( platformAccess )
 
 	elif createIfRequired:
 		# Send a new authorisation request to the specified service platform
@@ -193,8 +187,9 @@ def GetAccess( pebbleToken, configPath, createIfRequired ):
 	configLib = importlib.import_module( configPath )
 	
 	# Check to see if we've already been through the whole login authentication rigamarole
-	if HasAccess( pebbleToken, configLib.PLATFORM ):
+	platformAccess = storage.FindPlatformAccessCode( pebbleToken, configLib.PLATFORM )
+	if platformAccess is not None:
 		logging.debug( "GetAccess() User has access" )
-		return StandardSuccessReturn()
+		return StandardSuccessReturn( platformAccess )
 	
 	return CheckRequest( pebbleToken, configLib, createIfRequired )

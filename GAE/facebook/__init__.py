@@ -21,14 +21,14 @@ from json import dumps as jsonToString
 import requests
 
 #Project imports
-import base
+import common.base
 import storage
 import logging
 import defines as defines
 import net as net
 import events as events
 
-class Handler( base.Handler ):
+class Handler( common.base.Handler ):
 	def Process( self, branch, action ):
 		branches = \
 		{

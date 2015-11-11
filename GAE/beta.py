@@ -22,7 +22,7 @@ from google.appengine.ext.webapp import template
 import logging
 
 #Project Imports
-import storage
+import common.storage
 
 class FormHandler( webapp2.RequestHandler ):
 	def get( self ):
@@ -40,20 +40,20 @@ class FormHandler( webapp2.RequestHandler ):
 class UploadHandler( blobstore_handlers.BlobstoreUploadHandler ):
 	def post( self ):
 		
-		existingFile = storage.FindBetaKey()
+		existingFile = common.storage.FindBetaKey()
 		if existingFile is not None:
 			logging.debug( "existingFile: " + str( existingFile ) )
 			logging.debug( "existingFile id: " + str( existingFile.id ) )
 			blobstore.delete( existingFile.id.key() )
 		
 		blob_info = self.get_uploads()[ 0 ]
-		newFile = storage.CreateBetaKey( blob_info.key() )
+		newFile = common.storage.CreateBetaKey( blob_info.key() )
 		newFile.put()
 		self.redirect( "/beta/" )
 
 class DownloadHandler( blobstore_handlers.BlobstoreDownloadHandler ):
 	def get( self ):
-		existingFile = storage.FindBetaKey()
+		existingFile = common.storage.FindBetaKey()
 		if existingFile is not None:
 			if blobstore.get( existingFile.id.key() ):
 				self.send_blob( existingFile.id, save_as = True )

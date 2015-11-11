@@ -16,6 +16,7 @@
 import logging
 import os
 from json import dumps as jsonToString
+import importlib
 
 #Google Imports
 import webapp2
@@ -25,7 +26,7 @@ from google.appengine.ext.webapp import template
 import requests
 
 #Project Imports
-import storage
+import common.storage
 import beta
 import facebook
 import facebook.admin
@@ -161,7 +162,7 @@ class DeleteHandler( webapp2.RequestHandler ):
 			self.response.set_status( requests.codes.unauthorized )
 			return
 		
-		storage.DeleteAllPinsForUser( self.request.headers[ 'X-User-Token' ] )
+		common.storage.DeleteAllPinsForUser( self.request.headers[ 'X-User-Token' ] )
 		
 		self.response.set_status( requests.codes.ok )
 		response = \
@@ -169,6 +170,28 @@ class DeleteHandler( webapp2.RequestHandler ):
 			'status' : "success",
 		}
 		self.response.write( jsonToString( response ) )
+
+class CronHandler( webapp2.RequestHandler ):
+	def get( self, **params ):
+		
+		handlers = \
+		{
+			"tvshowtime" : "tvshowtime.cron"
+		}
+		
+		if params[ "handler" ] in handlers:
+			lib = handlers[ params[ "handler" ] ]
+			logging.debug( "CronHandler() About to import " + lib )
+			try:
+				cron = importlib.import_module( lib )
+				handler = cron.Handler( self.app, self.request )
+				handler.Process()
+			except Exception as e:
+				import traceback
+				stack = traceback.format_exc()
+				logging.error( "Error during Cron: " + str( e ) )
+				logging.error( stack )
+				self.response.set_status( requests.codes.internal_server_error )
 
 app = webapp2.WSGIApplication \
 (
@@ -178,6 +201,7 @@ app = webapp2.WSGIApplication \
 		webapp2.Route( '/beta/upload/', beta.FormHandler ),
 		webapp2.Route( '/beta/upload/submit/', beta.UploadHandler ),
 		webapp2.Route( '/beta/download/', beta.DownloadHandler ),
+		webapp2.Route( '/cron/<handler:\w+>/', CronHandler ),
 		webapp2.Route( '/v<version:\d+>/callback/<handler:\w+>/', CallbackHandler, 'callback' ),
 		webapp2.Route( '/v<version:\d+>/<handler:\w+>/<branch:\w+>/<action:\w+>/', MainHandler, 'mainhandler' ),
 		webapp2.Route( '/delete/v<version:\d+>/', DeleteHandler ),
