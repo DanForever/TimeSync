@@ -132,7 +132,6 @@ class MainHandler( webapp2.RequestHandler ):
 		handlers = \
 		{
 			"facebook" : facebook,
-			"trakt" : trakt,
 			"tvshowtime" : tvshowtime
 		}
 		
