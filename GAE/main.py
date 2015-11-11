@@ -31,7 +31,6 @@ import beta
 import facebook
 import facebook.admin
 import facebook.callback
-import trakt
 import tvshowtime
 
 class DefaultHandler( webapp2.RequestHandler ):
