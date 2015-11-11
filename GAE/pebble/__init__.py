@@ -16,12 +16,20 @@
 from datetime import datetime
 from json import dumps as jsonToString
 import logging
+import random
+import string
 
 #Library Imports
 import requests
 
 #Project Imports
 import net
+
+def AssemblePinSignature():
+	firstLetter = random.SystemRandom().choice( string.ascii_uppercase )
+	secondLetter = random.SystemRandom().choice( string.ascii_uppercase )
+	lastNumber = random.SystemRandom().choice( string.digits )
+	return "This Timeline Pin has been brought to you by time-sync.com, the letters " + firstLetter + " and " + secondLetter + ", and the number " + lastNumber
 
 class Pin():
 	def __init__( self, pebbleToken, id, time, title, icon, description = None, subtitle = None, location = None, duration = None, headings = None, paragraphs = None ):
@@ -48,8 +56,15 @@ class Pin():
 		self.subtitle = subtitle
 		self.duration = duration
 		
-		self.headings = headings
-		self.paragraphs = paragraphs
+		if headings is None:
+			self.headings = []
+		else:
+			self.headings = headings
+			
+		if paragraphs is None:
+			self.paragraphs = []
+		else:
+			self.paragraphs = paragraphs
 		
 		self.actions = []
 	
@@ -64,12 +79,17 @@ class Pin():
 		
 		self.actions.append( action )
 	
+	
+	
 	def Send( self ):
 		#Convert the python datetime object into an iso8601-ish format for the pebble api
 		pebbleDateFormat = "%Y-%m-%dT%H:%M:%SZ"
 		timeInPebbleFormat = self.time.strftime( pebbleDateFormat )
 		
 		lastUpdated = datetime.utcnow().strftime( pebbleDateFormat )
+		
+		self.headings.append( "Application" )
+		self.paragraphs.append( AssemblePinSignature() )
 		
 		data = \
 		{
@@ -80,16 +100,14 @@ class Pin():
 				'type'			: "genericPin",
 				'title' 		: self.title,
 				'tinyIcon'		: self.icon,
-				'lastUpdated'	: lastUpdated
+				'lastUpdated'	: lastUpdated,
+				'headings'		: self.headings,
+				'paragraphs'	: self.paragraphs
 			}
 		}
 		
 		if self.description is not None:
 			data[ "layout" ][ "body" ] = self.description
-		
-		if self.headings is not None and self.paragraphs is not None:
-			data[ "layout" ][ "headings" ] = self.headings
-			data[ "layout" ][ "paragraphs" ] = self.paragraphs
 		
 		if self.subtitle is not None:
 			data[ "layout" ][ "subtitle" ] = self.subtitle
