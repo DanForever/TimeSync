@@ -32,7 +32,7 @@ def AssemblePinSignature():
 	return "This Timeline Pin has been brought to you by time-sync.com, the letters " + firstLetter + " and " + secondLetter + ", and the number " + lastNumber
 
 class Pin():
-	def __init__( self, pebbleToken, id, time, title, icon, description = None, subtitle = None, location = None, duration = None, headings = None, paragraphs = None ):
+	def __init__( self, pebbleToken, id, time, title, icon, description = None, subtitle = None, location = None, duration = None, headings = None, paragraphs = None, source = None ):
 		
 		# An arbitrary, but unique string identifier (no longer than 64 characters)
 		self.id 			= id
@@ -55,6 +55,7 @@ class Pin():
 		self.location = location
 		self.subtitle = subtitle
 		self.duration = duration
+		self.source = source
 		
 		if headings is None:
 			self.headings = []
@@ -87,6 +88,10 @@ class Pin():
 		timeInPebbleFormat = self.time.strftime( pebbleDateFormat )
 		
 		lastUpdated = datetime.utcnow().strftime( pebbleDateFormat )
+		
+		if self.source is not None:
+			self.headings.append( "Source" )
+			self.paragraphs.append( self.source )
 		
 		self.headings.append( "Application" )
 		self.paragraphs.append( AssemblePinSignature() )

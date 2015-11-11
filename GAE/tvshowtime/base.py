@@ -116,6 +116,7 @@ class Handler( common.base.Handler ):
 		id = "ts-tvst-agenda-" + str( user.id ) + "-" + str( episode[ "id" ] ) + "-" + str( episode[ "air_date" ] )
 		timeStr = episode[ "air_date" ] + " " + episode[ "air_time" ]
 		subtitle = episode[ "network" ]
+		source = "TVShow Time"
 		
 		headings = \
 		[
@@ -141,7 +142,7 @@ class Handler( common.base.Handler ):
 				# Can't deal with this pin for some reason
 				return
 		
-		pin = pebble.Pin( pebbleToken, id, time, episode[ "show" ][ "name" ], defines.PEBBLE_ICON, subtitle = subtitle, headings = headings, paragraphs = paragraphs )
+		pin = pebble.Pin( pebbleToken, id, time, episode[ "show" ][ "name" ], defines.PEBBLE_ICON, subtitle = subtitle, headings = headings, paragraphs = paragraphs, source = source )
 		
 		if episode[ "seen" ]:
 			action = \
