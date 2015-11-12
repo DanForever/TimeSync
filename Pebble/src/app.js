@@ -1,13 +1,50 @@
+// Copyright 2015 Daniel Neve
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 var UI = require( 'ui' );
 var Menu = require( 'menu_resources' );
 
 var timelineToken = null;
 var main = new UI.Menu( Menu.MainMenu );
 var loadingCard = new UI.Card( Menu.PleaseWait );
-var subscribeMenu = new UI.Menu( Menu.SubscribeMenu );
+var subscribeMenu = null;
 var authRequestCard = null;
 var authRequestTimeout = null;
 var ignoreAuthCallback = true;
+var isLoadingCardVisible = false;
+var username = "";
+
+function ShowLoadingCard()
+{
+	loadingCard.show();
+	isLoadingCardVisible = true;
+}
+
+function HideLoadingCard()
+{
+	loadingCard.hide();
+	isLoadingCardVisible = false;
+}
+
+function HideAuthRequestCard()
+{
+	if( authRequestCard !== null )
+	{
+		authRequestCard.hide();
+		authRequestCard = null;
+	}
+}
 
 function FetchTimelineToken()
 {
@@ -54,13 +91,13 @@ function deleteMyDataCallback( results )
 
 		var dataDeletedCard = new UI.Card( cardData );
 		dataDeletedCard.show();
-		loadingCard.hide();
+		HideLoadingCard();
 	}
 	else
 	{			
 		var errorCard = new UI.Card( Menu.Error.Unknown );
 		errorCard.show();
-		loadingCard.hide();
+		HideLoadingCard();
 	}
 }
 
@@ -75,7 +112,7 @@ function subscriptionSuccessCallback( libname, data )
 	
 	var card = new UI.Card( cardConfig );
 	card.show();
-	loadingCard.hide();
+	HideLoadingCard();
 }
 
 function subscriptionFailureCallback( libname, data )
@@ -84,15 +121,15 @@ function subscriptionFailureCallback( libname, data )
 	{
 		title: Menu.Title[ libname ],
 		style: "small",
-		body: "Something went wrong configuring your subscription settings :("
+		body: "Something went wrong accessing your subscription settings :("
 	};
 	
 	var card = new UI.Card( cardConfig );
 	card.show();
-	loadingCard.hide();
+	HideLoadingCard();
 }
 
-function hasAuthCallback( libname, data )
+function showSubscriptionMenu( libname, data )
 {
 	var callback = function( e )
 	{
@@ -101,25 +138,78 @@ function hasAuthCallback( libname, data )
 		if( e.item == Menu.SubscribeMenuItems.Subscribe )
 		{
 			subscribe.Subscribe( timelineToken, libname, subscriptionSuccessCallback, subscriptionFailureCallback );
-			loadingCard.show();
+			ShowLoadingCard();
+			subscribeMenu.hide();
 		}
 		else if( e.item == Menu.SubscribeMenuItems.Unsubscribe )
 		{
 			subscribe.Unsubscribe( timelineToken, libname, subscriptionSuccessCallback, subscriptionFailureCallback );
-			loadingCard.show();
+			ShowLoadingCard();
+			subscribeMenu.hide();
 		}
 	};
 	
-	console.log( "User Authorised: " + data.name );
+	var menuConfig = Menu.SubscribeMenu;
 	
-	subscribeMenu.on( 'select', callback );
-	subscribeMenu.show();
-	loadingCard.hide();
-	if( authRequestCard !== null )
+	if( username && username !== "" )
 	{
-		authRequestCard.hide();
-		authRequestCard = null;
+		menuConfig.sections[ 0 ].title = username;
 	}
+	
+	if( data.hasOwnProperty( 'subscribed' ) )
+	{
+		var activeIndex;
+		var inactiveIndex;
+		
+		if( data.subscribed === "yes" )
+		{
+			console.log( "Putting the tick on Subscribed -> " + data.subscription );
+			activeIndex = 0;
+			inactiveIndex = 1;
+		}
+		else
+		{
+			console.log( "Putting the tick on Unsubscribed -> " + data.subscription );
+			activeIndex = 1;
+			inactiveIndex = 0;
+		}
+		
+		console.log( "MenuConfig: " + JSON.stringify( menuConfig, null, 4 ) );
+		
+		menuConfig.sections[ 0 ].items[ activeIndex ].icon = "images/check.png";
+		menuConfig.sections[ 0 ].items[ inactiveIndex ].icon = null;
+	}
+	
+	subscribeMenu = new UI.Menu( menuConfig );
+	subscribeMenu.on( 'select', callback );
+	subscribeMenu.on( 'hide', function() { username = null; } );
+	subscribeMenu.show();
+	HideLoadingCard();
+	HideAuthRequestCard();
+}
+
+function hasAuthCallback( libname, data )
+{
+	if( !isLoadingCardVisible )
+	{
+		ShowLoadingCard();
+	}
+	
+	if( data.hasOwnProperty( 'name' ) )
+	{
+		console.log( "User Authorised: " + data.name );
+	
+		username = data.name;
+	}
+	else
+	{
+		console.log( "No username returned in response" );
+	}
+	
+	var subscribe = require( 'subscribe' );
+	
+	console.log( "Getting current subscription info..." );
+	subscribe.IsSubscribed( timelineToken, libname, showSubscriptionMenu, subscriptionFailureCallback );
 }
 
 function awaitingAuthCallback( libname, data )
@@ -150,14 +240,19 @@ function awaitingAuthCallback( libname, data )
 
 				if( authRequestTimeout !== null )
 				{
+					console.log( "Clearing authRequestTimeout" );
 					clearTimeout( authRequestTimeout );
 					authRequestTimeout = null;
+					
+					// This will also force the card to be removed from the queue
+					// So that it won't appear when the user presses the back button
+					HideAuthRequestCard();
 				}
 			}
 		);
 		
 		authRequestCard.show();
-		loadingCard.hide();
+		HideLoadingCard();
 	}
 	
 	authRequestTimeout = setTimeout
@@ -182,7 +277,7 @@ function authErrorCallback( libname, data )
 	
 	var authErrorCard = new UI.Card( errorCardConfig );
 	authErrorCard.show();
-	loadingCard.hide();
+	HideLoadingCard();
 }
 
 main.on
@@ -198,13 +293,14 @@ main.on
 			console.log( "e.items == Menu.FacebookItems.Events" );
 			ignoreAuthCallback = false;
 			auth.Auth( timelineToken, "fb", hasAuthCallback, awaitingAuthCallback, authErrorCallback );
-			loadingCard.show();
+			ShowLoadingCard();
 		}
 		else if( e.item == Menu.TVShowTimeItems.Agenda )
 		{
 			console.log( "e.item == Menu.TVShowTimeItems.Agenda" );
 			ignoreAuthCallback = false;
 			auth.Auth( timelineToken, "tvshowtime", hasAuthCallback, awaitingAuthCallback, authErrorCallback );
+			ShowLoadingCard();
 		}
 		else if( e.section == Menu.MainMenuItems.Trakt )
 		{
@@ -226,7 +322,7 @@ main.on
 				
 				request.Request( timelineToken, deleteme.Config.Data, deleteMyDataCallback );
 				
-				loadingCard.show();
+				ShowLoadingCard();
 			}
 		}
 	}

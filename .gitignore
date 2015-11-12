@@ -1,4 +1,3 @@
-Pebble/appinfo.json
 *.pyc
 GAE/index.yaml
 GAE/Secrets/*
