@@ -15,7 +15,6 @@
 #System imports
 import datetime
 from json import dumps as jsonToString
-#from json import loads as stringToJson
 
 #Library imports
 import requests
@@ -38,8 +37,9 @@ class Handler( common.base.Handler ):
 		
 		actions = \
 		{
-			"subscribe" : True,
-			"unsubscribe" : False,
+			"subscribe" : "yes",
+			"unsubscribe" : "no",
+			"issubscribed" : "check",
 			
 			# Auth Actions
 			"request" : True,
@@ -57,18 +57,28 @@ class Handler( common.base.Handler ):
 	def SubscribeEvents( self, pebbleToken, action ):
 		logging.debug( "SubscribeEvents()" )
 		
+		activateSub = action == "yes"
+		
 		# update sub data
 		fbSubData = storage.FindFacebookSubscriptionByWatchToken( pebbleToken )
-		fbSubData.events = action
-		fbSubData.put()
 		
-		if action:
+		if action != "check":
+			fbSubData.events = activateSub
+			fbSubData.put()
+		
+		if activateSub:
 			# Grab all the events for the user
 			events.Fetch( pebbleToken, fbSubData.key().name() )
+		
+		if fbSubData.events:
+			subscribed = "yes"
+		else:
+			subscribed = "no"
 		
 		response = \
 		{
 			'status' : "success",
+			'subscribed' : subscribed
 		}
 		self.response.status = requests.codes.ok
 		self.response.data = jsonToString( response )
@@ -119,7 +129,6 @@ class Handler( common.base.Handler ):
 		logging.debug( "Created auth request" )
 		
 		return authRequest
-		
 		
 	def CheckLoginCodeStatus( self, pebbleToken, authRequest ):
 		#todo: Check time since last poll?
