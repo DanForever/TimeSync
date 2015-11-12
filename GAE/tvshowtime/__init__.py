@@ -27,8 +27,7 @@ class Handler( base.Handler ):
 		branches = \
 		{
 			"auth" : self.Auth,
-			"agenda" : self.Agenda,
-			"subscribe" : self.Subscribe,
+			"agenda" : self.AgendaSubscription,
 			"checkin" : self.Checkin
 		}
 		
@@ -38,10 +37,9 @@ class Handler( base.Handler ):
 			"request" : True,
 			"query"	: False,
 			
-			"subscribe" : True,
-			"unsubscribe" : False,
-			
-			"populate" : True,
+			"subscribe" : "add",
+			"unsubscribe" : "remove",
+			"issubscribed" : "check",
 			
 			"watch" : "WATCH",
 			"unwatch" : "UNWATCH"
@@ -65,20 +63,30 @@ class Handler( base.Handler ):
 		#Fetch and store username
 		if response[ 0 ] == requests.codes.ok:
 			user = self.User( pebbleToken, response[ 2 ] )
-			outdata[ "name" ] = user.name
+			if user:
+				outdata[ "name" ] = user.name
 		
 		self.response.status = response[ 0 ]
-		self.response.data = response[ 1 ]
+		self.response.data = outdata
 	
-	def Subscribe( self, pebbleToken, action ):
+	def AgendaSubscription( self, pebbleToken, action ):
 		if self.CreateConfigDB( pebbleToken ) is None:
 			self.response.status = requests.codes.unauthorized
 			self.response.data = { 'status' : "require_auth" }
 			return
 		
-		if action:
+		if action == "add":
 			storage.StoreSubscription( pebbleToken )
-		else: 
+			self.response.data = { 'status' : "success" }
+		elif action == "remove":
 			storage.DeleteSubscription( pebbleToken )
+			self.response.data = { 'status' : "success" }
+		else:
+			sub = storage.FindSubscription( pebbleToken )
+			self.response.data = { 'status' : "success" }
+			if sub is None:
+				self.response.data[ "subscribed" ] = "no"
+			else:
+				self.response.data[ "subscribed" ] = "yes"
+			
 		self.response.status = requests.codes.ok
-		self.response.data = { 'status' : "success" }
