@@ -56,6 +56,9 @@ def Process( pebbleToken, events, fbuid ):
 		
 		if 'description' in event:
 			description = event[ 'description' ]
+			
+			if len( description ) > 1023:
+				description = description[ : 1000 ] + "..."
 		else:
 			description = "No description"
 		
