@@ -29,11 +29,14 @@ def StoreSubscription( pebbleToken ):
 	sub.put()
 
 def DeleteSubscription( pebbleToken ):
-	#Create
-	sub = TVShowtimeAgendaSubscription( pebbleToken = pebbleToken )
-	
-	#Store
-	sub.put()
+	#Find
+	key = db.Key.from_path( 'TVShowtimeAgendaSubscription', pebbleToken )
+	db.delete( key )
+
+def FindSubscription( pebbleToken ):
+	#Find
+	key = db.Key.from_path( 'TVShowtimeAgendaSubscription', pebbleToken )
+	return db.get( key )
 
 def IterateSubscriptions( callback, cursor = None ):
 	
