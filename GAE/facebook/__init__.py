@@ -70,7 +70,7 @@ class Handler( common.base.Handler ):
 			# Grab all the events for the user
 			events.Fetch( pebbleToken, fbSubData.key().name() )
 		
-		if fbSubData.events:
+		if fbSubData is not None and fbSubData.events:
 			subscribed = "yes"
 		else:
 			subscribed = "no"
