@@ -72,9 +72,11 @@ class Handler( common.base.Handler ):
 		
 		response = net.MakeRequest( config.agenda.CONFIG, db )
 		
-		for episode in response[ 1 ][ "episodes" ]:
-			user = storage.FindUser( pebbleToken )
-			response = self.CreatePin( pebbleToken, episode, user )
+		data = response[ 1 ]
+		if "episodes" in data:
+			for episode in data[ "episodes" ]:
+				user = storage.FindUser( pebbleToken )
+				response = self.CreatePin( pebbleToken, episode, user )
 		
 		logging.debug( "Agenda() Finished" )
 		
