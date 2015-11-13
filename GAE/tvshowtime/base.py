@@ -77,6 +77,13 @@ class Handler( common.base.Handler ):
 			for episode in data[ "episodes" ]:
 				user = storage.FindUser( pebbleToken )
 				response = self.CreatePin( pebbleToken, episode, user )
+				
+				if response[ 0 ] != requests.codes.ok:
+					if response[ 1 ][ "message" ] == "INVALID_USER_TOKEN":
+						logging.warning( "we've been given a duff user token, backing off" )
+						self.response.status = requests.codes.bad_request
+						self.response.data = { 'status' : "invalid_watch_token" }
+						break 
 		
 		logging.debug( "Agenda() Finished" )
 		
@@ -119,7 +126,7 @@ class Handler( common.base.Handler ):
 			taskqueue.add( **config )
 		except taskqueue.TombstonedTaskError:
 			logging.warning( "Couldn't create task due to name conflict with previously created task" )
-			return ( requests.codes.forbidden, { 'status' : "Too soon" } )
+			return ( requests.codes.too_many_requests, { 'status' : "Too soon" } )
 		return ( requests.codes.ok, { 'status' : "success" } )
 		
 	def Checkin( self, pebbleToken, action ):
