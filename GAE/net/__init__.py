@@ -31,7 +31,10 @@ def FindDictEntry( source, path ):
 def MapResponse( map, response ):
 	out = {}
 	for key, value in map.iteritems():
-		out[ key ] = response[ value ]
+		if value in response:
+			out[ key ] = response[ value ]
+		else:
+			logging.debug( "Key " + str( value ) + " missing from response, could not assign to: " + str( key ) )
 	return out
 
 def Resolve( type, config, db ):
