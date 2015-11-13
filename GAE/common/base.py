@@ -26,11 +26,11 @@ class Handler():
 		self.app = app
 		self.request = request
 		
-	def GetUrl( self, handler, params ):
+	def GetUrl( self, handler, params, full = True, scheme = "https" ):
 		
 		params[ "version" ]	= 1
-		params[ "_full" ]	= True
-		params[ "_scheme" ] = "https"
+		params[ "_full" ]	= full
+		params[ "_scheme" ] = scheme
 		
 		url = self.app.router.build \
 		(
