@@ -84,6 +84,7 @@ class Handler( base.Handler ):
 			
 			# Immediately populate with pins (Using a push task to do so)
 			self.UpdateSubscription( sub )
+			self.response.data = { 'status' : "success" }
 			
 		elif action == "remove":
 			storage.DeleteSubscription( pebbleToken )

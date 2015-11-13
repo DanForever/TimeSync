@@ -124,8 +124,8 @@ class Handler( common.base.Handler ):
 		
 		try:
 			taskqueue.add( **config )
-		except taskqueue.TombstonedTaskError:
-			logging.warning( "Couldn't create task due to name conflict with previously created task" )
+		except ( taskqueue.TaskAlreadyExistsError, taskqueue.TombstonedTaskError ) as e:
+			logging.warning( "Couldn't create task due to name conflict with previously created task: " + str( e ) )
 			return ( requests.codes.too_many_requests, { 'status' : "Too soon" } )
 		return ( requests.codes.ok, { 'status' : "success" } )
 		
