@@ -165,4 +165,8 @@ class Pin():
 		
 		response = net.MakeRequest( config )
 		
+		if response[ 0 ] != requests.codes.ok:
+			logging.warning( "Create Pin Failed Response: " + str( response[ 1 ] ) )
+			logging.warning( "Create Pin Failed Request : " + str( config ) )
+		
 		return ( response[ 0 ], response[ 1 ] )
