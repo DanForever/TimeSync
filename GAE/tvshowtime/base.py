@@ -16,6 +16,9 @@
 import logging
 from datetime import datetime
 
+#Google imports
+from google.appengine.api import taskqueue
+
 # Library Imports
 import requests
 
@@ -72,11 +75,50 @@ class Handler( common.base.Handler ):
 		for episode in response[ 1 ][ "episodes" ]:
 			user = storage.FindUser( pebbleToken )
 			response = self.CreatePin( pebbleToken, episode, user )
-			
-			if response[ 0 ] != requests.codes.ok:
-				logging.warning( "Failed to create TVST pin: " + str( response ) )
+		
+		logging.debug( "Agenda() Finished" )
 		
 		return ( response[ 0 ], "" )
+		
+	def UpdateSubscription( self, sub ):
+		pebbleToken = sub.key().name()
+		
+		# Grab the URL for updating the user's agenda
+		url = self.GetUrl \
+		(
+			"mainhandler",
+			{
+				'handler'	: "tvshowtime",
+				'branch'	: "agenda",
+				'action'	: "update"
+			},
+			full = False,
+			scheme = None
+		)
+		
+		# Use this to make the name of the task vaguely unique, assuming we
+		# don't want to execute the task more frequently than once an hour
+		nameDate = datetime.utcnow().strftime( "Date%Y-%m-%dT%H-" )
+		
+		config = \
+		{
+			'name' : "TVST-Sub-" + nameDate + str( pebbleToken ),
+			'url' : url,
+			'method' : "POST",
+			'headers' :
+			{
+				'X-User-Token' : pebbleToken
+			}
+		}
+		
+		logging.debug( "Creating Task: " + str( config ) )
+		
+		try:
+			taskqueue.add( **config )
+		except taskqueue.TombstonedTaskError:
+			logging.warning( "Couldn't create task due to name conflict with previously created task" )
+			return ( requests.codes.forbidden, { 'status' : "Too soon" } )
+		return ( requests.codes.ok, { 'status' : "success" } )
 		
 	def Checkin( self, pebbleToken, action ):
 		import config.checkin

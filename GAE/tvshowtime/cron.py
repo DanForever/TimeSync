@@ -14,6 +14,7 @@
 
 #System imports
 import logging
+from datetime import datetime
 
 #Project imports
 import base
@@ -22,8 +23,4 @@ import storage
 class Handler( base.Handler ):
 	def Process( self ):
 		storage.IterateSubscriptions( self.UpdateSubscription )
-		
-	def UpdateSubscription( self, sub ):
-		pebbleToken = sub.key().name()
-		self.Agenda( pebbleToken )
 		

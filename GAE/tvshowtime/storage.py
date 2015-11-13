@@ -27,6 +27,8 @@ def StoreSubscription( pebbleToken ):
 	
 	#Store
 	sub.put()
+	
+	return sub
 
 def DeleteSubscription( pebbleToken ):
 	#Find

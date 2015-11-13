@@ -40,6 +40,7 @@ class Handler( base.Handler ):
 			"subscribe" : "add",
 			"unsubscribe" : "remove",
 			"issubscribed" : "check",
+			"update" : "update",
 			
 			"watch" : "WATCH",
 			"unwatch" : "UNWATCH"
@@ -75,12 +76,23 @@ class Handler( base.Handler ):
 			self.response.data = { 'status' : "require_auth" }
 			return
 		
+		self.response.status = requests.codes.ok
+		
 		if action == "add":
-			storage.StoreSubscription( pebbleToken )
-			self.response.data = { 'status' : "success" }
+			# Add the subscription so that it'll be picked up by later 
+			sub = storage.StoreSubscription( pebbleToken )
+			
+			# Immediately populate with pins (Using a push task to do so)
+			self.UpdateSubscription( sub )
+			
 		elif action == "remove":
 			storage.DeleteSubscription( pebbleToken )
 			self.response.data = { 'status' : "success" }
+		elif action == "update":
+			# Update directly, be warned, could time out if it's not run from a task!
+			response = self.Agenda( pebbleToken )
+			self.response.status = response[ 0 ]
+			self.response.data = response[ 1 ]
 		else:
 			sub = storage.FindSubscription( pebbleToken )
 			self.response.data = { 'status' : "success" }
@@ -89,4 +101,3 @@ class Handler( base.Handler ):
 			else:
 				self.response.data[ "subscribed" ] = "yes"
 			
-		self.response.status = requests.codes.ok
