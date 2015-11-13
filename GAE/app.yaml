@@ -20,8 +20,8 @@ handlers:
   upload: templates/privacy.html
 
 - url: /favicon\.ico
-  static_files: favicon.ico
-  upload: favicon\.ico
+  static_files: templates/resources/images/favicon.ico
+  upload: templates/resources/images/favicon\.ico
 
 - url: /beta/upload/.*
   script: main.app
