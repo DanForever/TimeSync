@@ -80,8 +80,6 @@ class Pin():
 		
 		self.actions.append( action )
 	
-	
-	
 	def Send( self ):
 		#Convert the python datetime object into an iso8601-ish format for the pebble api
 		pebbleDateFormat = "%Y-%m-%dT%H:%M:%SZ"
@@ -162,6 +160,8 @@ class Pin():
 				}
 			}
 		}
+		
+		logging.debug( "Making Pin request: " + str( config ) )
 		
 		response = net.MakeRequest( config )
 		

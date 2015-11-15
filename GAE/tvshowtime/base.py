@@ -94,6 +94,8 @@ class Handler( common.base.Handler ):
 	def UpdateSubscription( self, sub ):
 		pebbleToken = sub.key().name()
 		
+		logging.debug( "UpdateSubscription(): " + str( pebbleToken ) )
+		
 		# Grab the URL for updating the user's agenda
 		url = self.GetUrl \
 		(
