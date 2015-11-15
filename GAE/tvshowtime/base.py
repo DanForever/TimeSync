@@ -72,6 +72,7 @@ class Handler( common.base.Handler ):
 		
 		response = net.MakeRequest( config.agenda.CONFIG, db )
 		
+		status = requests.codes.ok
 		data = response[ 1 ]
 		if "episodes" in data:
 			for episode in data[ "episodes" ]:
@@ -81,13 +82,14 @@ class Handler( common.base.Handler ):
 				if response[ 0 ] != requests.codes.ok:
 					if response[ 1 ][ "message" ] == "INVALID_USER_TOKEN":
 						logging.warning( "we've been given a duff user token, backing off" )
-						self.response.status = requests.codes.bad_request
-						self.response.data = { 'status' : "invalid_watch_token" }
+						
+						status = requests.codes.bad_request
+						data = { 'status' : "invalid_watch_token" }
 						break 
 		
 		logging.debug( "Agenda() Finished" )
 		
-		return ( response[ 0 ], "" )
+		return ( status, data )
 		
 	def UpdateSubscription( self, sub ):
 		pebbleToken = sub.key().name()
