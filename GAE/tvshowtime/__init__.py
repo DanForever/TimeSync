@@ -77,26 +77,28 @@ class Handler( base.Handler ):
 			return
 		
 		self.response.status = requests.codes.ok
-		
+		self.response.data = { 'status' : "success" }
+			
 		if action == "add":
 			# Add the subscription so that it'll be picked up by later 
 			sub = storage.StoreSubscription( pebbleToken )
 			
 			# Immediately populate with pins (Using a push task to do so)
 			self.UpdateSubscription( sub )
-			self.response.data = { 'status' : "success" }
 			
 		elif action == "remove":
 			storage.DeleteSubscription( pebbleToken )
-			self.response.data = { 'status' : "success" }
 		elif action == "update":
 			# Update directly, be warned, could time out if it's not run from a task!
 			response = self.Agenda( pebbleToken )
-			self.response.status = response[ 0 ]
-			self.response.data = response[ 1 ]
+			
+			# We can't return anything other than 200 OK here because a failure will
+			# prompt a push task to retry, but the conditions for failure won't have changed
+			if self.response.status != requests.codes.ok:
+				logging.warning( "AgendaSubscription() Update: " + str( response ) )
+				self.response.data = response[ 1 ]
 		else:
 			sub = storage.FindSubscription( pebbleToken )
-			self.response.data = { 'status' : "success" }
 			if sub is None:
 				self.response.data[ "subscribed" ] = "no"
 			else:
