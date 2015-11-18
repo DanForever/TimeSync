@@ -15,6 +15,9 @@ handlers:
 - url: /admin/
   static_files: templates/admin/admin.html
   upload: templates/admin/admin.html
+  secure: always
+  login: admin
+  auth_fail_action: redirect
   
 - url: /favicon\.ico
   static_files: templates/resources/images/favicon.ico
