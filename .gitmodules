@@ -1,0 +1,3 @@
+[submodule "GAE/templates/resources/js/Chart.js"]
+	path = GAE/templates/resources/js/Chart.js
+	url = https://github.com/nnnick/Chart.js

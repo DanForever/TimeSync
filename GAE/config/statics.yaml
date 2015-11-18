@@ -13,8 +13,8 @@ handlers:
   static_dir: templates/resources/
 
 - url: /admin/
-  static_files: templates/admin.html
-  upload: templates/admin.html
+  static_files: templates/admin/admin.html
+  upload: templates/admin/admin.html
   
 - url: /favicon\.ico
   static_files: templates/resources/images/favicon.ico

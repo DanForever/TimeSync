@@ -3,32 +3,27 @@
   <head>
     <meta name="generator" content="HTML Tidy for HTML5 (experimental) for Windows https://github.com/w3c/tidy-html5/tree/c63cc39" />
     <meta charset="utf-8" />
-    <title>TimeSync</title>
+    <title>Analytics</title>
     <link href='https://fonts.googleapis.com/css?family=Roboto+Condensed:400,700|Roboto:400,700,400italic,700italic' rel='stylesheet' type='text/css' />
     <link rel='stylesheet' type='text/css' href='resources/css/style.css' />
     <link rel='stylesheet' type='text/css' href='resources/css/animations.css' />
     <script src="resources/js/jquery.js"></script>
     <script src="resources/js/svg.js"></script>
+    <script src="resources/js/Chart.js/Chart.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   </head>
   <body>
     <div class="pin entypo">
-      <img class="svg" src="resources/images/entypo/cog.svg" />
+      <img class="svg" src="resources/images/entypo/pie-chart.svg" />
     </div>
-    <h1>Admin</h1>
-    <br />
-    <br />
-    <br />
-    <br />
-    <div class="pin entypo">
-      <a href="/admin/facebook/">
-        <img class="svg" src="resources/images/entypo/facebook.svg" />
-      </a>
-    </div>
+    <h1>Analytics</h1>
     <p>
-      <a href="/admin/facebook/">
-        <h2>Facebook</h2>
-      </a>
+    {% for chart in charts %}
+      <canvas id="{{ chart.id }}" width="250" height="250"></canvas>
+      <script>
+      {{ chart.javascript }}
+      </script>
+    {% endfor %}
     </p>
   </body>
 </html>

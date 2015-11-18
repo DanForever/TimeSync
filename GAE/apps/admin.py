@@ -38,6 +38,16 @@ class AdminHandler( base.Handler ):
 					"subscribe" : "Subscribe",
 					"unsubscribe" : "Unsubscribe"
 				}
+			},
+			
+			"analytics" :
+			{
+				"lib" : "analytics",
+				
+				"get" :
+				{
+					"default" : "Main"
+				}
 			}
 		}
 

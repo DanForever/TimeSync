@@ -77,7 +77,7 @@ class Handler( common.base.Handler ):
 		for subscription in subscriptions[ 'data' ]:
 			subscription[ "unsubscribe" ] = { "url" : unsubscribeUrl }
 		
-		path = "./templates/facebook_admin.html"
+		path = "templates/admin/facebook.html"
 		values = \
 		{
 			"subscriptions" : subscriptions[ 'data' ],
@@ -182,7 +182,7 @@ class Handler( common.base.Handler ):
 			}
 		)
 		
-		path = "templates/feedback.html"
+		path = "templates/admin/facebook_feedback.html"
 		values = \
 		{
 			"redirect" : response.status_code == requests.codes.ok,
