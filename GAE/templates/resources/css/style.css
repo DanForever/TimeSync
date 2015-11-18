@@ -138,3 +138,14 @@ h1:first-of-type {
   top: calc(30vh + 3.5vw);
   border-top: 0 none;
 }
+
+tr:first-of-type  td{
+  background: lightcoral;
+}
+
+td {
+  background: lightsalmon;
+  padding-left: 3px;
+  padding-right: 3px;
+}
+

@@ -1,0 +1,21 @@
+
+handlers:
+  
+- url: /?
+  static_files: templates/index.html
+  upload: templates/index.html
+  
+- url: /privacy-policy/
+  static_files: templates/privacy.html
+  upload: templates/privacy.html
+
+- url: .*/resources/
+  static_dir: templates/resources/
+
+- url: /admin/
+  static_files: templates/admin.html
+  upload: templates/admin.html
+  
+- url: /favicon\.ico
+  static_files: templates/resources/images/favicon.ico
+  upload: templates/resources/images/favicon\.ico

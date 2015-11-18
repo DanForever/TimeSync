@@ -23,6 +23,9 @@ import base
 import storage
 
 class Handler( base.Handler ):
+	def ProcessWrapper( self, params ):
+		self.Process( params[ "branch" ], params[ "action" ] )
+		
 	def Process( self, branch, action ):
 		branches = \
 		{

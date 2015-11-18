@@ -39,7 +39,7 @@ def NetGetRealTimeSubscriptions():
 	return ( response.status_code, response.json() )
 
 class Handler( common.base.Handler ):
-	def Main( self ):
+	def Main( self, params ):
 		logging.debug( "Facebook Admin Main()" )
 		
 		# Get list of subscribed urls from facebook
@@ -92,7 +92,7 @@ class Handler( common.base.Handler ):
 		
 		self.response.data = template.render( path, values )
 	
-	def Subscribe( self ):
+	def Subscribe( self, params ):
 		logging.debug( "Facebook Subscribe()" )
 		
 		if 'object' not in self.request.POST:
@@ -142,7 +142,7 @@ class Handler( common.base.Handler ):
 		
 		self.ReturnToMain( response )
 	
-	def Unsubscribe( self ):
+	def Unsubscribe( self, params ):
 		logging.debug( "Facebook Unsubscribe()" )
 		
 		if 'object' not in self.request.POST:
@@ -182,7 +182,7 @@ class Handler( common.base.Handler ):
 			}
 		)
 		
-		path = "./templates/feedback.html"
+		path = "templates/feedback.html"
 		values = \
 		{
 			"redirect" : response.status_code == requests.codes.ok,

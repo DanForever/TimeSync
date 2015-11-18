@@ -20,6 +20,7 @@ from google.appengine.ext.webapp import template
 
 #System Imports
 import logging
+import os
 
 #Project Imports
 import common.storage
@@ -29,7 +30,7 @@ class FormHandler( webapp2.RequestHandler ):
 		submitUrl = "/beta/upload/submit/"
 		submitUrl = blobstore.create_upload_url( submitUrl );
 		
-		path = "./templates/upload.html"
+		path = "templates/upload.html"
 		values = \
 		{
 			'url' : submitUrl
@@ -59,3 +60,13 @@ class DownloadHandler( blobstore_handlers.BlobstoreDownloadHandler ):
 				self.send_blob( existingFile.id, save_as = True )
 			else:
 				self.error( 404 )
+
+app = webapp2.WSGIApplication \
+(
+	[
+		webapp2.Route( '/beta/upload/', FormHandler ),
+		webapp2.Route( '/beta/upload/submit/', UploadHandler ),
+		webapp2.Route( '/beta/download/', DownloadHandler ),
+	],
+	debug = os.environ[ 'SERVER_SOFTWARE' ].startswith( 'Development' )
+)

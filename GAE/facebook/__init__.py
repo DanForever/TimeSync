@@ -28,6 +28,9 @@ import net as net
 import events as events
 
 class Handler( common.base.Handler ):
+	def ProcessWrapper( self, params ):
+		self.Process( params[ "branch" ], params[ "action" ] )
+		
 	def Process( self, branch, action ):
 		branches = \
 		{

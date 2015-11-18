@@ -1,54 +1,40 @@
 application: timesync-1061
-version: 2
+version: 1
 runtime: python27
 api_version: 1
 threadsafe: yes
 
+includes:
+- config/statics.yaml
+- config/beta.yaml
+
 handlers:
 
-- url: /pebble/.*resources/
-  static_dir: templates/pebble/resources/
-
-- url: /pebble/.*
-  script: pebble.app
-
-- url: .*/resources/
-  static_dir: templates/resources/
-
-- url: /privacy-policy/
-  static_files: templates/privacy.html
-  upload: templates/privacy.html
-
-- url: /favicon\.ico
-  static_files: templates/resources/images/favicon.ico
-  upload: templates/resources/images/favicon\.ico
-
-- url: /beta/upload/.*
-  script: main.app
-  login: admin
-  auth_fail_action: redirect
-  secure: always
-  
 - url: /admin/.*
-  script: main.app
+  script: apps.admin.app
   login: admin
   auth_fail_action: redirect
   secure: always
-  
-- url: /stylesheets
-  static_dir: templates/resources/css
 
 - url: /delete/.*
-  script: main.app
+  script: apps.delete.app
   secure: always
   
 - url: /cron/.*
-  script: main.app
+  script: apps.cron.app
   secure: always
   login: admin
   
-- url: .*
-  script: main.app
+- url: /v\d*/callback/.*
+  script: apps.callback.app
+  secure: always
+  
+- url: /v\d*/.*
+  script: apps.main.app
+  secure: always
+  
+- url: /.*
+  script: apps.404.app
 
 libraries:
 - name: webapp2

@@ -1,0 +1,12 @@
+
+handlers:
+  
+- url: /beta/
+  static_files: templates/beta.html
+  upload: templates/beta.html
+
+- url: /beta/upload/.*
+  script: apps.beta.app
+  login: admin
+  auth_fail_action: redirect
+  secure: always

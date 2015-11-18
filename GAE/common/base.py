@@ -26,6 +26,9 @@ class Handler():
 		self.app = app
 		self.request = request
 		
+		if "X-User-Token" in request.headers:
+			pebbleToken = request.headers[ "X-User-Token" ]
+		
 	def GetUrl( self, handler, params, full = True, scheme = "https" ):
 		
 		params[ "version" ]	= 1

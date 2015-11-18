@@ -14,23 +14,29 @@
 
 #System Imports
 import os
+from json import dumps as jsonToString
 
 #Google Imports
 import webapp2
 from google.appengine.ext.webapp import template
 
+#Library Imports
+from requests import codes
 
-class ConfigHandler( webapp2.RequestHandler ):
+class Error404Handler( webapp2.RequestHandler ):
 	def get( self ):
-		path = "./templates/pebble/config.html"
-		values = {}
-		self.response.write( template.render( path, values ) )
-
+		self.response.set_status( codes.not_found )
+		self.response.write( template.render( "templates/404.html", {} ) )
+		
+	def post( self ):
+		self.response.set_status( codes.not_found )
+		self.response.write( jsonToString( { 'status' : "Invalid URL" } ) )
+		self.response.headers[ "Content-Type" ] = "application/json"
 
 app = webapp2.WSGIApplication \
 (
 	[
-		webapp2.Route( '/pebble/', ConfigHandler ),
+		( r'/.*', Error404Handler ),
 	],
 	debug = os.environ[ 'SERVER_SOFTWARE' ].startswith( 'Development' )
 )
