@@ -13,68 +13,37 @@
 # limitations under the License.
 
 #System imports
-import datetime
 from json import dumps as jsonToString
 
 #Library imports
-import requests
+from requests import codes
 
 #Project imports
 import common.base
 import storage
 import logging
-import defines as defines
-import net as net
-import events as events
+import events
 
 class Handler( common.base.Handler ):
 	def Auth( self, params ):
 		logging.debug( "Facebook Auth()" )
-		pebbleToken = self.request.headers[ 'X-User-Token' ]
 		
 		import auth.devices
-		response = auth.devices.GetAccess( pebbleToken, "facebook.config.auth", params[ "action" ] )
+		response = auth.devices.GetAccess( self.request.headers[ 'X-User-Token' ], "facebook.config.auth", params[ "action" ] )
 		
 		self.response.status = response[ 0 ]
 		self.response.data = response[ 1 ]
 		
-	def ProcessWrapper( self, params ):
-		self.Process( params[ "branch" ], params[ "action" ] )
+	def Events( self, params ):
+		logging.debug( "Facebook Events()" )
 		
-	def Process( self, branch, action ):
-		branches = \
-		{
-			"events" : self.SubscribeEvents
-		}
-		
-		actions = \
-		{
-			"subscribe" : "yes",
-			"unsubscribe" : "no",
-			"issubscribed" : "check",
-			
-			# Auth Actions
-			"request" : True,
-			"query"	: False
-		}
-		
-		if branch not in branches or action not in actions:
-			self.response.status = requests.codes.not_found
-			return
-		
+		activateSub = params[ "action" ] == "subscribe"
 		pebbleToken = self.request.headers[ 'X-User-Token' ]
-		
-		branches[ branch ]( pebbleToken, actions[ action ] )
-		
-	def SubscribeEvents( self, pebbleToken, action ):
-		logging.debug( "SubscribeEvents()" )
-		
-		activateSub = action == "yes"
 		
 		# update sub data
 		fbSubData = storage.FindFacebookSubscriptionByWatchToken( pebbleToken )
 		
-		if action != "check":
+		if params[ "action" ] != "issubscribed":
 			fbSubData.events = activateSub
 			fbSubData.put()
 		
@@ -92,6 +61,6 @@ class Handler( common.base.Handler ):
 			'status' : "success",
 			'subscribed' : subscribed
 		}
-		self.response.status = requests.codes.ok
+		self.response.status = codes.ok
 		self.response.data = jsonToString( response )
 		

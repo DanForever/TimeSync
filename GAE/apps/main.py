@@ -31,7 +31,6 @@ class MainHandler( base.Handler ):
 				
 				"post" :
 				{
-					"default" : "ProcessWrapper",
 					"auth" :
 					{
 						"func" : "Auth",
@@ -43,7 +42,20 @@ class MainHandler( base.Handler ):
 								"Content-Type" : "application/json"
 							}
 						}
-					}
+					},
+					
+					"events" :
+					{
+						"func" : "Events",
+						
+						"out" :
+						{
+							"headers" :
+							{
+								"Content-Type" : "application/json"
+							}
+						}
+					},
 				}
 			},
 			
