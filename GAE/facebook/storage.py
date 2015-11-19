@@ -20,22 +20,6 @@ from google.appengine.ext import blobstore
 class Watch( db.Model ):
 	blarg = db.StringProperty()
 
-class PlatformAuthRequest( db.Model ):
-	# Internal code used to verify authorisation with platform
-	auth_code = db.StringProperty()
-	
-	# Code displayed to the user that they have to manually enter into platform website
-	user_code = db.StringProperty()
-	
-	# URL the user must go to in order to enter the user_code and authorise their pebble
-	user_uri = db.LinkProperty()
-	
-	# Expire time
-	expires = db.DateTimeProperty()
-	
-	# Expire time
-	update_interval = db.IntegerProperty()
-
 class PlatformAccess( db.Model ):
 	token = db.StringProperty()
 
@@ -48,9 +32,6 @@ class FacebookSubscription( db.Model ):
 	watchToken = db.StringProperty()
 	events = db.BooleanProperty()
 	birthdays = db.BooleanProperty()
-
-class BetaKey( db.Model ):
-	id = blobstore.BlobReferenceProperty()
 
 class TemporaryAuthToken( db.Model ):
 	token = db.StringProperty()
@@ -70,50 +51,10 @@ def CreateFacebookSubscription( fbuid, watchToken ):
 	
 	return entry
 
-def CreateBetaKey( key ):
-	betaKey = BetaKey( key_name = "Key", id = key )
-	return betaKey
-
 def CreateWatch( access_token ):
 	watch = Watch( key_name = access_token )
 	
 	return watch
-
-def CreatePlatformAuthRequest( watch, platform, private_key, public_key, url, expires, interval ):
-	
-	request = PlatformAuthRequest \
-	(
-		# Parent Is always the watch
-		parent = watch,
-		
-		# Key is the platform - there's only ever one entry per watch per platform
-		key_name = platform,
-		
-		# Auth request data
-		auth_code = private_key,
-		user_code = public_key,
-		user_uri = url,
-		expires = expires,
-		update_interval = interval
-	)
-	
-	return request
-
-def CreateAccess( watch, platform, platform_token ):
-	
-	access = PlatformAccess \
-	(
-		# Parent Is always the watch
-		parent = watch,
-		
-		# Key is the platform - there's only ever one entry per watch per platform
-		key_name = platform,
-		
-		# The code that gives us access to this user's facebook data
-		token = platform_token
-	)
-	
-	return access
 
 def CreateWatchPin( watch, id, title, body, start_time ):
 	
@@ -134,10 +75,6 @@ def FindTemporaryAuthToken( token ):
 	key = db.Key.from_path( 'TemporaryAuthToken', token )
 	return db.get( key )
 
-def FindBetaKey():
-	key = db.Key.from_path( 'BetaKey', "Key" )
-	return db.get( key )
-
 def FindFacebookSubscriptionByWatchToken( watchToken ):
 	query = FacebookSubscription.all()
 	query.filter( "watchToken =", watchToken )
@@ -153,9 +90,6 @@ def FindChild( pebbleToken, platform, childType ):
 	request = db.get( key )
 	
 	return request
-
-def FindPlatformAuthRequest( pebbleToken, platform ):
-	return FindChild( pebbleToken, platform, 'PlatformAuthRequest' )
 
 def FindPlatformAccessCode( pebbleToken, platform ):
 	return FindChild( pebbleToken, platform, 'PlatformAccess' )
