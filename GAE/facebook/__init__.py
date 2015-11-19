@@ -28,6 +28,16 @@ import net as net
 import events as events
 
 class Handler( common.base.Handler ):
+	def Auth( self, params ):
+		logging.debug( "Facebook Auth()" )
+		pebbleToken = self.request.headers[ 'X-User-Token' ]
+		
+		import auth.devices
+		response = auth.devices.GetAccess( pebbleToken, "facebook.config.auth", params[ "action" ] )
+		
+		self.response.status = response[ 0 ]
+		self.response.data = response[ 1 ]
+		
 	def ProcessWrapper( self, params ):
 		self.Process( params[ "branch" ], params[ "action" ] )
 		

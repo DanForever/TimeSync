@@ -64,9 +64,9 @@ class Handler( webapp2.RequestHandler ):
 				elif "default" in methodConfig:
 					branch = methodConfig[ "default" ]
 			
+			branch = self.ProcessBranch( branch )
 			if branch is None:
-				logging.warning( "Invalid branch" )
-				self.response.set_status( codes.not_found )
+				return
 			
 			# Import library
 			lib = importlib.import_module( handlerConfig[ "lib" ] )
@@ -82,3 +82,19 @@ class Handler( webapp2.RequestHandler ):
 		else:
 			logging.warning( "Invalid handler or method" )
 			self.response.set_status( codes.not_found )
+	
+	def ProcessBranch( self, branch ):
+		if branch is None:
+			logging.warning( "Invalid branch" )
+			self.response.set_status( codes.not_found )
+			return None
+		
+		elif isinstance( branch, dict ):
+			if "out" in branch:
+				out = branch[ "out" ]
+				if "headers" in out:
+					headers = out[ "headers" ]
+					for key in headers:
+						self.response.headers[ key ] = headers[ key ]
+			return branch[ "func" ]
+		return branch

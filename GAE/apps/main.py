@@ -31,7 +31,19 @@ class MainHandler( base.Handler ):
 				
 				"post" :
 				{
-					"default" : "ProcessWrapper"
+					"default" : "ProcessWrapper",
+					"auth" :
+					{
+						"func" : "Auth",
+						
+						"out" :
+						{
+							"headers" :
+							{
+								"Content-Type" : "application/json"
+							}
+						}
+					}
 				}
 			},
 			
