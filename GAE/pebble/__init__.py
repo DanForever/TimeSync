@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright 2015 Daniel Neve
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,6 +14,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+#Imports from the future!
+from __future__ import unicode_literals
 
 #System Imports
 from datetime import datetime
@@ -31,32 +37,38 @@ def AssemblePinSignature():
 	lastNumber = random.SystemRandom().choice( string.digits )
 	return "This Timeline Pin has been brought to you by time-sync.com, the letters " + firstLetter + " and " + secondLetter + ", and the number " + lastNumber
 
+def Sanitise( input, maxLength ):
+	if input is not None:
+		if len( input ) > maxLength:
+			input = input[ : maxLength - 3 ] + "..."
+	return input
+
 class Pin():
 	def __init__( self, pebbleToken, id, time, title, icon, description = None, subtitle = None, location = None, duration = None, headings = None, paragraphs = None, source = None ):
-		
+
 		# An arbitrary, but unique string identifier (no longer than 64 characters)
 		self.id 			= id
-		
+
 		# DateTime for the pin, in UTC
 		self.time			= time
-		
+
 		# Title (Main text visible on the timeline
 		self.title			= title
-		
+
 		# Description (Visible under more details)
-		self.description	= description
-		
+		self.description	= Sanitise( description, 384 )
+
 		# Icon path that corresponds to one defined here: https://developer.getpebble.com/guides/timeline/pin-structure/#pin-icons
 		self.icon			= icon
-		
+
 		# The timeline token for the pebble
 		self.pebbleToken	= pebbleToken
-		
-		self.location = location
-		self.subtitle = subtitle
-		self.duration = duration
-		self.source = source
-		
+
+		self.location 		= location
+		self.subtitle 		= subtitle
+		self.duration 		= duration
+		self.source 		= source
+
 		if headings is None:
 			self.headings = []
 		else:
@@ -65,10 +77,13 @@ class Pin():
 		if paragraphs is None:
 			self.paragraphs = []
 		else:
+			for index in range( len( paragraphs ) ):
+				paragraphs[ index ] = Sanitise( paragraphs[ index ], 384 )
+			
 			self.paragraphs = paragraphs
-		
+
 		self.actions = []
-	
+
 	def AddAction( self, title, url, headers ):
 		action = \
 		{
@@ -141,6 +156,7 @@ class Pin():
 				},
 				
 				'data' : jsonToString( data )
+				#'data' : data
 			},
 			
 			'response' :
@@ -160,8 +176,6 @@ class Pin():
 				}
 			}
 		}
-		
-		logging.debug( "Making Pin request: " + str( config ) )
 		
 		response = net.MakeRequest( config )
 		
