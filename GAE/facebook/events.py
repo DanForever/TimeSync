@@ -27,6 +27,14 @@ import defines
 import pebble
 import auth.keys
 
+RSVP = \
+{
+	'attending'		: "Attending",
+	'unsure' 		: "Interested",
+	'declined'		: "Declined",
+	'not_replied' 	: "Not replied"
+}
+
 def Fetch( pebbleToken, db, fbuid ):
 	import config.user
 	
@@ -59,17 +67,19 @@ def AddEvent( pebbleToken, event, fbuid ):
 	{
 		'pebbleToken' : pebbleToken,
 		'id' : "ts-fbev-" + str( fbuid ) + "-" + str( event[ 'id' ] ),
-		'time' : defines.ISO8601ToDateTime( event[ 'start_time' ] ),
+		'time' : defines.ISO8601ToDateTime( event[ 'start_time' ] ).astimezone( defines.UTC ),
 		'title' : event[ 'name' ],
 		'icon' : "system://images/NOTIFICATION_FACEBOOK",
 		'source' : "Facebook Events",
 		'headings' :
 		[
-			"Description"
+			"Description",
+			"RSVP Status"
 		],
 		'paragraphs' :
 		[
-			event[ 'description' ]
+			event[ 'description' ],
+			RSVP[ event[ 'rsvp_status' ] ]
 		]
 	}
 	
