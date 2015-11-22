@@ -21,6 +21,7 @@ import requests
 #Project imports
 import base
 import storage
+import defines
 
 class Handler( base.Handler ):
 	def ProcessWrapper( self, params ):
@@ -74,7 +75,7 @@ class Handler( base.Handler ):
 		self.response.data = outdata
 	
 	def AgendaSubscription( self, pebbleToken, action ):
-		if self.CreateConfigDB( pebbleToken ) is None:
+		if self.CreateConfigDB( defines.PLATFORM ) is None:
 			self.response.status = requests.codes.unauthorized
 			self.response.data = { 'status' : "require_auth" }
 			return

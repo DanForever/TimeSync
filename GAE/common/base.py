@@ -15,6 +15,10 @@
 #Library Imports
 import requests
 
+#Project Imports
+import common.storage
+import auth.keys
+
 class HTTPResponse():
 	def __init__( self ):
 		self.status = requests.codes.ok
@@ -26,8 +30,23 @@ class Handler():
 		self.app = app
 		self.request = request
 		
-		if "X-User-Token" in request.headers:
-			pebbleToken = request.headers[ "X-User-Token" ]
+	def CreateConfigDB( self, platform, pebbleToken = None, platformAccess = None ):
+		
+		if pebbleToken == None:
+			if "X-User-Token" in self.request.headers:
+				pebbleToken = self.request.headers[ "X-User-Token" ]
+		
+		if platformAccess is None:
+			platformAccess = common.storage.FindPlatformAccessCode( pebbleToken, platform )
+			if platformAccess is None:
+				return None
+		
+		db = \
+		{
+			auth.keys.ACCESS_TOKEN_KEY : platformAccess.token
+		}
+		
+		return db
 		
 	def GetUrl( self, handler, params, full = True, scheme = "https" ):
 		

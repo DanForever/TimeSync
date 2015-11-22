@@ -24,6 +24,8 @@ SUBSCRIBE_HANDSHAKE_TOKEN = "ts_fb_hs_tok"
 URL_BASE = 'https://graph.facebook.com/'
 URL_SUB_AUTH = 'oauth/device'
 
+START_DATE_KEY = "from_date"
+
 def ISO8601ToDateTime( strDt ):
 	return iso8601.parse_date( strDt )
 

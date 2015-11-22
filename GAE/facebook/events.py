@@ -13,92 +13,72 @@
 # limitations under the License.
 
 #System imports
+import datetime
 from json import dumps as jsonToString
 import logging
 
 #library imports
-import requests
+from requests import codes
 
 #Project imports
 import storage
 import net
 import defines
+import pebble
+import auth.keys
 
-def Fetch( pebbleToken, fbuid ):
-	# Check to see if we already have facebook access
-	access = storage.FindPlatformAccessCode( pebbleToken, defines.PLATFORM )
+def Fetch( pebbleToken, db, fbuid ):
+	import config.user
 	
-	if not access:
-		return False
+	# Since the timeline can't be populated with anything older than 2 days ago
+	# We limit the query to recent and future events
+	since = datetime.datetime.now( defines.UTC ) - datetime.timedelta( days = 2 )
+	db[ defines.START_DATE_KEY ] = defines.DateTimeToISO8601( since )
 	
-	status = net.GetEvents( access.token )
+	response = net.MakeRequest( config.user.EVENTS, db )
 	
-	if status[ 0 ] == requests.codes.ok:
-		Process( pebbleToken, status[ 1 ][ 'data' ], fbuid )
-		return True
-		
-	else:
-		return False
+	if response[ 0 ] == codes.ok:
+		logging.debug( "Events returned: " + str( response[ 1 ][ "events" ] ) )
+		AddEvents( pebbleToken, response[ 1 ][ "events" ], fbuid )
 
-def Process( pebbleToken, events, fbuid ):
-	# Create parent object, this does not need to be written to the
-	# database as it's only purpose is to contain the pebble token
-	watch = storage.CreateWatch( pebbleToken )
-	
+def AddEvents( pebbleToken, events, fbuid ):
 	for event in events:
-		logging.debug( "Event '" + event[ 'name' ] + "', ID: " + event[ 'id' ] )
+		response = AddEvent( pebbleToken, event, fbuid )
 		
-		# We need to associate the key with facebook events
-		# ts-fbev-XXXXXXXXXXXXXXXX-YYYYYYYYYYYYYYYYY
-		key = "ts-fbev-" + str( fbuid ) + "-" + str( event[ 'id' ] )
-		
-		startTime = defines.ISO8601ToDateTime( event[ 'start_time' ] )
-		
-		if 'description' in event:
-			description = event[ 'description' ]
-			
-			if len( description ) > 1023:
-				description = description[ : 1000 ] + "..."
-		else:
-			description = "No description"
-		
-		pin = storage.CreateWatchPin( watch, key, event[ 'name' ], description, startTime )
-		pin.put()
-		
-		#Convert time to UTC
-		startTimeUtc = startTime.astimezone( defines.UTC )
-		
-		#Construct HTTP put request
-		pebbleDateFormat = "%Y-%m-%dT%H:%M:%SZ"
-		eventTimeInPebbleFormat = startTimeUtc.strftime( pebbleDateFormat )
-		
-		body = \
-		{
-			'id' 		: key,
-			'time' 		: eventTimeInPebbleFormat,
-			'layout'	: \
-			{
-				'type' 		: "genericPin",
-				'title' 	: event[ 'name' ],
-				'tinyIcon'	: "system://images/NOTIFICATION_FACEBOOK",
-				'body' 		: description
-			}
-		}
-		
-		headers = \
-		{
-			'X-User-Token' : pebbleToken,
-			'Content-Type' : "application/json"
-		}
-		
-		url = "https://timeline-api.getpebble.com/v1/user/pins/" + key;
-		bodyStr = jsonToString( body )
-		
-		response = requests.put( url = url, headers = headers, data = bodyStr )
-		
-		logging.debug( "Pin URL: " + str( response.url ) )
-		logging.debug( "Pin Data: " + bodyStr )
-		logging.debug( "Pin Headers: " + str( headers ) )
-		
-		logging.debug( "Pin response status: " + str( response.status_code ) )
-		logging.debug( "Pin response data: " + response.text )
+		if response[ 0 ] != codes.ok:
+			if response[ 1 ][ "message" ] == "INVALID_USER_TOKEN":
+				logging.warning( "we've been given a duff user token, backing off" )
+				
+				status = codes.bad_request
+				data = { 'status' : "invalid_watch_token" }
+				break 
+
+def AddEvent( pebbleToken, event, fbuid ):
+	logging.debug( "Event '" + event[ 'name' ] + "', ID: " + event[ 'id' ] )
+	data = \
+	{
+		'pebbleToken' : pebbleToken,
+		'id' : "ts-fbev-" + str( fbuid ) + "-" + str( event[ 'id' ] ),
+		'time' : defines.ISO8601ToDateTime( event[ 'start_time' ] ),
+		'title' : event[ 'name' ],
+		'icon' : "system://images/NOTIFICATION_FACEBOOK",
+		'source' : "Facebook Events",
+		'headings' :
+		[
+			"Description"
+		],
+		'paragraphs' :
+		[
+			event[ 'description' ]
+		]
+	}
+	
+	if "end_time" in event:
+		endTime = defines.ISO8601ToDateTime( event[ 'end_time' ] )
+		delta = endTime - data[ "time" ]
+		data[ "duration" ] = (int)( delta.total_seconds() / 60 )
+	
+	pin = pebble.Pin( **data )
+	
+	return pin.Send()
+

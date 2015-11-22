@@ -32,24 +32,10 @@ import common.storage
 import storage
 
 class Handler( common.base.Handler ):
-	def CreateConfigDB( self, pebbleToken, platformAccess = None ):
-		
-		if platformAccess is None:
-			platformAccess = common.storage.FindPlatformAccessCode( pebbleToken, defines.PLATFORM )
-			if platformAccess is None:
-				return None
-		
-		db = \
-		{
-			auth.keys.ACCESS_TOKEN_KEY : platformAccess.token
-		}
-		
-		return db
-	
 	def User( self, pebbleToken, platformAccess = None ):
 		import config.user
 		
-		db = self.CreateConfigDB( pebbleToken )
+		db = self.CreateConfigDB( defines.PLATFORM )
 		if db is None:
 			return None
 		
@@ -66,7 +52,7 @@ class Handler( common.base.Handler ):
 	def Agenda( self, pebbleToken ):
 		import config.agenda
 		
-		db = self.CreateConfigDB( pebbleToken )
+		db = self.CreateConfigDB( defines.PLATFORM )
 		if db is None:
 			return ( requests.codes.unauthorized, "" )
 		
@@ -139,7 +125,7 @@ class Handler( common.base.Handler ):
 		
 		episodeId = self.request.headers[ defines.PEBBLE_PIN_ACT_EP_KEY ]
 		
-		db = self.CreateConfigDB( pebbleToken )
+		db = self.CreateConfigDB( defines.PLATFORM )
 		if db is None:
 			self.response.status = requests.codes.unauthorized
 			return

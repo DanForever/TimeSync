@@ -23,6 +23,7 @@ import common.base
 import storage
 import logging
 import events
+import defines
 
 class Handler( common.base.Handler ):
 	def Auth( self, params ):
@@ -48,8 +49,15 @@ class Handler( common.base.Handler ):
 			fbSubData.put()
 		
 		if activateSub:
+			db = self.CreateConfigDB( defines.PLATFORM )
+			
+			if db is None:
+				self.response.status = requests.codes.unauthorized
+				self.response.data = jsonToString( { 'status' : "require_auth" } )
+				return
+			
 			# Grab all the events for the user
-			events.Fetch( pebbleToken, fbSubData.key().name() )
+			events.Fetch( pebbleToken, db, fbSubData.key().name() )
 		
 		if fbSubData is not None and fbSubData.events:
 			subscribed = "yes"
@@ -63,4 +71,3 @@ class Handler( common.base.Handler ):
 		}
 		self.response.status = codes.ok
 		self.response.data = jsonToString( response )
-		
