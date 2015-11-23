@@ -62,6 +62,17 @@ def AddEvents( pebbleToken, events, fbuid ):
 
 def AddEvent( pebbleToken, event, fbuid ):
 	logging.debug( "Event '" + event[ 'name' ] + "', ID: " + event[ 'id' ] )
+	
+	headings = []
+	paragraphs = []
+	
+	if "description" in event:
+		headings.append( "Description" )
+		paragraphs.append( event[ "description" ] )
+		
+	headings.append( "RSVP Status" )
+	paragraphs.append( RSVP[ event[ 'rsvp_status' ] ] )
+	
 	data = \
 	{
 		'pebbleToken' : pebbleToken,
@@ -70,16 +81,8 @@ def AddEvent( pebbleToken, event, fbuid ):
 		'title' : event[ 'name' ],
 		'icon' : "system://images/NOTIFICATION_FACEBOOK",
 		'source' : "Facebook Events",
-		'headings' :
-		[
-			"Description",
-			"RSVP Status"
-		],
-		'paragraphs' :
-		[
-			event[ 'description' ],
-			RSVP[ event[ 'rsvp_status' ] ]
-		]
+		'headings' : headings,
+		'paragraphs' : paragraphs
 	}
 	
 	if "end_time" in event:

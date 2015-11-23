@@ -58,7 +58,7 @@ class Handler( common.base.Handler ):
 			logging.debug( "Facebook callback handler Get(): Retrieved token does not match expected token" )
 			self.response.status = requests.codes.unauthorized
 	
-	def Post( self ):
+	def Post( self, params ):
 		logging.debug( "CallbackHandler Post()" )
 		logging.debug( "Callback headers: " + str( self.request.headers ) )
 		logging.debug( "Callback POST: " + str( self.request.POST ) )
@@ -87,7 +87,9 @@ class Handler( common.base.Handler ):
 						if fbSub.events:
 							logging.debug( "Updating events for user: " + str( fbuid ) )
 							
-							events.Fetch( fbSub.watchToken, fbuid )
+							db = self.CreateConfigDB( defines.PLATFORM, fbSub.watchToken )
+							
+							events.Fetch( fbSub.watchToken, db, fbuid )
 			
 			self.response.status = requests.codes.ok
 		
