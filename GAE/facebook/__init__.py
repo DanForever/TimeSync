@@ -13,7 +13,6 @@
 # limitations under the License.
 
 #System imports
-from json import dumps as jsonToString
 
 #Library imports
 from requests import codes
@@ -24,42 +23,89 @@ import storage
 import logging
 import events
 import defines
+import net
+
 
 class Handler( common.base.Handler ):
+	def GetOrCreateSubscription( self, pebbleToken, db = None ):
+		fbSubData = storage.FindFacebookSubscriptionByWatchToken( pebbleToken )
+		
+		if fbSubData is None:
+			if db is None:
+				db = self.CreateConfigDB( defines.PLATFORM )
+				if db is None:
+					logging.warning( "No facebook access token assocated with pebble token: " + str( pebbleToken ) )
+					return ( None, None )
+			
+			import config.user
+			
+			response = net.MakeRequest( config.user.USER, db )
+			
+			if response[ 0 ] == codes.ok:
+				fbSubData = storage.CreateFacebookSubscription( response[ 1 ][ "fb_uid" ], pebbleToken )
+				fbUserData = storage.CreateUser( pebbleToken, response[ 1 ][ "fb_name" ] )
+			else:
+				logging.warning( "Problem requesting user data from facebook! status: " + str( response[ 0 ] ) + " response: " + str( response[ 1 ] ) )
+		else:
+			fbUserData = storage.FindUser( pebbleToken )
+			
+		return ( fbSubData, fbUserData )
+
 	def Auth( self, params ):
 		logging.debug( "Facebook Auth()" )
 		
 		import auth.devices
 		response = auth.devices.GetAccess( self.request.headers[ 'X-User-Token' ], "facebook.config.auth", params[ "action" ] )
 		
-		self.response.status = response[ 0 ]
-		self.response.data = response[ 1 ]
+		data = response[ 1 ]
 		
+		if response[ 0 ] == codes.ok and response[ 1 ][ "status" ] == "success":
+			fbData = self.GetOrCreateSubscription( self.request.headers[ 'X-User-Token' ] )
+			
+			fbSubData = fbData[ 0 ]
+			fbUserData = fbData[ 1 ]
+			
+			if fbSubData is None:
+				self.response.status = codes.internal_server_error
+				self.response.data = { 'status' : "Create Subscription Failed" }
+				return
+				
+			fbSubData.put()
+			
+			if fbUserData is not None:
+				fbUserData.put()
+				data[ "name" ] = fbUserData.name
+		
+		self.response.status = response[ 0 ]
+		self.response.data = data
+
 	def Events( self, params ):
 		logging.debug( "Facebook Events()" )
 		
 		activateSub = params[ "action" ] == "subscribe"
 		pebbleToken = self.request.headers[ 'X-User-Token' ]
 		
-		# update sub data
-		fbSubData = storage.FindFacebookSubscriptionByWatchToken( pebbleToken )
+		db = self.CreateConfigDB( defines.PLATFORM )
+		fbData = self.GetOrCreateSubscription( pebbleToken, db )
+		
+		fbSubData = fbData[ 0 ]
 		
 		if params[ "action" ] != "issubscribed":
-			fbSubData.events = activateSub
-			fbSubData.put()
-		
-		if activateSub:
-			db = self.CreateConfigDB( defines.PLATFORM )
+			if fbSubData is not None:
+				# update sub data
+				fbSubData.events = activateSub
+				fbSubData.put()
+				
+				# Grab all the events for the user
+				if activateSub:
+					events.Fetch( pebbleToken, db, fbSubData.key().name() )
 			
-			if db is None:
-				self.response.status = requests.codes.unauthorized
-				self.response.data = jsonToString( { 'status' : "require_auth" } )
-				return
+		if fbSubData is None:
+			self.response.status = codes.unauthorized
+			self.response.data = { 'status' : "require_auth" }
+			return
 			
-			# Grab all the events for the user
-			events.Fetch( pebbleToken, db, fbSubData.key().name() )
-		
-		if fbSubData is not None and fbSubData.events:
+		if fbSubData.events:
 			subscribed = "yes"
 		else:
 			subscribed = "no"
@@ -69,5 +115,6 @@ class Handler( common.base.Handler ):
 			'status' : "success",
 			'subscribed' : subscribed
 		}
+		
 		self.response.status = codes.ok
-		self.response.data = jsonToString( response )
+		self.response.data = response

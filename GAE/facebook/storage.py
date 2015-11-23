@@ -14,90 +14,55 @@
 
 #Google Imports
 from google.appengine.ext import db
-from google.appengine.ext.db import polymodel
-from google.appengine.ext import blobstore
-
-class Watch( db.Model ):
-	blarg = db.StringProperty()
-
-class PlatformAccess( db.Model ):
-	token = db.StringProperty()
-
-class WatchPin( db.Model ):
-	title = db.StringProperty()
-	body = db.StringProperty( multiline = True )
-	start_time = db.DateTimeProperty()
 
 class FacebookSubscription( db.Model ):
 	watchToken = db.StringProperty()
 	events = db.BooleanProperty()
-	birthdays = db.BooleanProperty()
+	created = db.DateTimeProperty( auto_now_add = True )
 
 class TemporaryAuthToken( db.Model ):
 	token = db.StringProperty()
+
+class FacebookUser( db.Model ):
+	name = db.StringProperty()
 
 def CreateTemporaryAuthToken( token, generatedToken ):
 	token = TemporaryAuthToken( key_name = generatedToken, token = token )
 	return token
 
-def CreateFacebookSubscription( fbuid, watchToken ):
+def CreateFacebookSubscription( fbuid, pebbleToken ):
 	entry = FacebookSubscription \
 	(
 		key_name = fbuid,
-		watchToken = watchToken,
+		watchToken = pebbleToken,
 		events = False,
 		birthdays = False
 	)
 	
 	return entry
 
-def CreateWatch( access_token ):
-	watch = Watch( key_name = access_token )
-	
-	return watch
-
-def CreateWatchPin( watch, id, title, body, start_time ):
-	
-	pin = WatchPin \
+def CreateUser( pebbleToken, name ):
+	user = FacebookUser \
 	(
-		parent = watch,
-		
-		key_name = id,
-		
-		title = title,
-		body = body,
-		start_time = start_time
+		key_name = pebbleToken,
+		name = name
 	)
 	
-	return pin
+	return user
 
 def FindTemporaryAuthToken( token ):
 	key = db.Key.from_path( 'TemporaryAuthToken', token )
 	return db.get( key )
 
-def FindFacebookSubscriptionByWatchToken( watchToken ):
+def FindFacebookSubscriptionByWatchToken( pebbleToken ):
 	query = FacebookSubscription.all()
-	query.filter( "watchToken =", watchToken )
+	query.filter( "watchToken =", pebbleToken )
 	return query.get()
 	
 def FindFacebookSubscription( fbuid ):
 	key = db.Key.from_path( 'FacebookSubscription', fbuid )
 	return db.get( key )
-	
-def FindChild( pebbleToken, platform, childType ):
-	parentKey = db.Key.from_path( 'Watch', pebbleToken )
-	key = db.Key.from_path( childType, platform, parent = parentKey )
-	request = db.get( key )
-	
-	return request
 
-def FindPlatformAccessCode( pebbleToken, platform ):
-	return FindChild( pebbleToken, platform, 'PlatformAccess' )
-	
-def DeleteAllPinsForUser( pebbleToken ):
-	parentKey = db.Key.from_path( 'Watch', pebbleToken )
-	pins = WatchPin.all()
-	pins.ancestor( parentKey )
-	
-	for pin in pins.run():
-		pin.delete()
+def FindUser( pebbleToken ):
+	key = db.Key.from_path( 'FacebookUser', pebbleToken )
+	return db.get( key )

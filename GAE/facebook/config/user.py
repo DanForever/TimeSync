@@ -22,6 +22,49 @@ from requests import codes
 import facebook.defines as defines
 import auth.keys
 
+USER = \
+{
+	'resolve' :
+	{
+		# Add variables to the request
+		'request' :
+		{
+			( ( "params", ), "access_token" ) : auth.keys.ACCESS_TOKEN_KEY
+		}
+	},
+	
+	'request' :
+	{
+		'url' : defines.URL_BASE + defines.PLATFORM_VERSION + "/me",
+		'method' : "GET",
+		
+		# form encoded
+		'params' : {}
+	},
+	
+	'response' :
+	{
+		'success' :
+		{
+			'exists' : "id",
+			'status' : codes.ok,
+			'map' :
+			{
+				'fb_uid'  : "id",
+				'fb_name' : "name",
+			}
+		},
+		
+		'failure' :
+		{
+			'map' :
+			{
+				'error' : "error"
+			}
+		}
+	}
+}
+
 EVENTS = \
 {
 	'resolve' :

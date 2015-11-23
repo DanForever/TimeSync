@@ -14,7 +14,6 @@
 
 #System imports
 import datetime
-from json import dumps as jsonToString
 import logging
 
 #library imports
