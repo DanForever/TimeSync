@@ -16,6 +16,7 @@
 import logging
 import os
 import importlib
+from json import dumps as jsonToString
 
 #Google Imports
 import webapp2
@@ -77,8 +78,13 @@ class Handler( webapp2.RequestHandler ):
 			# Call branch
 			getattr( handler, branch )( params )
 			
+			if isinstance( handler.response.data, basestring ):
+				data = handler.response.data
+			else:
+				data = jsonToString( handler.response.data )
+			
 			self.response.set_status( handler.response.status )
-			self.response.write( handler.response.data )
+			self.response.write( data )
 		else:
 			logging.warning( "Invalid handler or method" )
 			self.response.set_status( codes.not_found )
