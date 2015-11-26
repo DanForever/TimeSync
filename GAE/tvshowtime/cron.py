@@ -21,6 +21,6 @@ import base
 import storage
 
 class Handler( base.Handler ):
-	def Process( self ):
+	def Process( self, params ):
 		storage.IterateSubscriptions( self.UpdateSubscription )
 		
