@@ -29,6 +29,10 @@ handlers:
   script: apps.callback.app
   secure: always
   
+- url: /v\d*/analytics/.*
+  script: apps.analytics.app
+  secure: always
+  
 - url: /v\d*/.*
   script: apps.main.app
   secure: always
