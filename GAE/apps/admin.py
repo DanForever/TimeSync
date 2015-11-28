@@ -42,7 +42,7 @@ class AdminHandler( base.Handler ):
 			
 			"analytics" :
 			{
-				"lib" : "analytics",
+				"lib" : "analytics.admin",
 				
 				"get" :
 				{
