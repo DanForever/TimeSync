@@ -28,13 +28,9 @@ function request( timelineToken, config, callback )
 		var results = {};
 		for( var status in config.response )
 		{
-			console.log( "Status: " + data.status );
-			console.log( "Eval status: " + status );
-			
 			if( data.status == status )
 			{
 				results.status = status;
-				console.log( "config: " + JSON.stringify( data, null, 4 ) );
 				
 				for( var propertyIndex in config.response[ status ] )
 				{

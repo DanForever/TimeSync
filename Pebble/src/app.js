@@ -15,15 +15,106 @@
 var UI = require( 'ui' );
 var Menu = require( 'menu_resources' );
 
+var watchInfo = null;
 var timelineToken = null;
-var main = new UI.Menu( Menu.MainMenu );
-var loadingCard = new UI.Card( Menu.PleaseWait );
 var subscribeMenu = null;
 var authRequestCard = null;
 var authRequestTimeout = null;
 var ignoreAuthCallback = true;
 var isLoadingCardVisible = false;
 var username = "";
+var isChalk = false;
+
+if( Pebble.getActiveWatchInfo )
+{
+	watchInfo = Pebble.getActiveWatchInfo();
+	console.log( "Watch Info: " + JSON.stringify( watchInfo, null, 4 ) );
+
+	if( watchInfo !== null )
+	{
+		isChalk = watchInfo.platform === "chalk";
+	}
+	
+	if( isChalk )
+	{
+		console.log( "We've got ourselves a PTR here!" );
+	}
+	else
+	{
+		console.log( "Typical Pebble" );
+	}
+}
+else
+{
+	console.log( "Pebble.getActiveWatchInfo not available" );
+}
+
+var main = CreateMenu( Menu.MainMenu );
+var loadingCard = CreateCard( Menu.PleaseWait );
+
+function CreateCard( config )
+{
+	console.log( "CreateCard()" );
+	
+	if( isChalk )
+	{
+		console.log( "chalk!" );
+	
+		config.title = "\n    " + config.title;
+		config.fullscreen = true;
+		
+		if( config.body )
+		{
+			console.log( "has body" );
+		
+			var indentTemplate = "               ";
+			var indents = [  1, 0, 0, 0, 1, 2 ];
+			var maxLength = 24;
+		
+			var carat = 0;
+			var length = config.body.length;
+			var newBody = "";
+			var line = 0;
+		
+			while( carat < length )
+			{
+				var indent = indentTemplate.slice( 0, indents[ line ] );
+				var lineLength = maxLength - ( indents[ line ] * 2 );
+				section = config.body.slice( carat, carat + lineLength )
+				
+				var formattedSection = indent + section + "\n";
+				newBody = newBody + formattedSection;
+				
+				console.log( "Body   : " + config.body );
+				console.log( "Linelen: " + lineLength );
+				console.log( "Carat  : " + carat );
+				console.log( "Section: '" + section + "'" );
+				console.log( "Format : '" + formattedSection + "'" );
+				
+				carat += lineLength;
+				++line;
+			}
+		
+			config.body = newBody;
+		}
+	}
+	
+	return new UI.Card( config );
+}
+
+function CreateMenu( config )
+{
+	if( isChalk )
+	{
+		config.fullscreen = true;
+		for( var index in config.sections )
+		{
+			config.sections[ index ].title = "   " + config.sections[ index ].title;
+		}
+	}
+	
+	return new UI.Menu( config );
+}
 
 function ShowLoadingCard()
 {
@@ -63,6 +154,12 @@ function FetchTimelineToken()
 			timelineToken = token;
 			console.log( 'Timeline token successfully retrieved: ' + token );
 			
+			if( watchInfo !== null )
+			{
+				var analytics = require( 'analytics' );
+				analytics.SendWatchInfo( timelineToken, watchInfo );
+			}
+			
 			main.show();
 		},
 		
@@ -70,7 +167,7 @@ function FetchTimelineToken()
 		{
 			console.log( 'Error getting timeline token: ' + error );
 			
-			var noTimelineCard = new UI.Card( Menu.Error.NoTimelineToken );
+			var noTimelineCard = CreateCard( Menu.Error.NoTimelineToken );
 			
 			noTimelineCard.show();
 		}
@@ -89,13 +186,13 @@ function deleteMyDataCallback( results )
 			subtitle: "Data deleted!"
 		};
 
-		var dataDeletedCard = new UI.Card( cardData );
+		var dataDeletedCard = CreateCard( cardData );
 		dataDeletedCard.show();
 		HideLoadingCard();
 	}
 	else
 	{			
-		var errorCard = new UI.Card( Menu.Error.Unknown );
+		var errorCard = CreateCard( Menu.Error.Unknown );
 		errorCard.show();
 		HideLoadingCard();
 	}
@@ -106,11 +203,10 @@ function subscriptionSuccessCallback( libname, data )
 	var cardConfig =
 	{
 		title: Menu.Title[ libname ],
-		style: "small",
 		body: "Success"
 	};
 	
-	var card = new UI.Card( cardConfig );
+	var card = CreateCard( cardConfig );
 	card.show();
 	HideLoadingCard();
 }
@@ -124,7 +220,7 @@ function subscriptionFailureCallback( libname, data )
 		body: "Something went wrong accessing your subscription settings :("
 	};
 	
-	var card = new UI.Card( cardConfig );
+	var card = CreateCard( cardConfig );
 	card.show();
 	HideLoadingCard();
 }
@@ -174,13 +270,11 @@ function showSubscriptionMenu( libname, data )
 			inactiveIndex = 0;
 		}
 		
-		console.log( "MenuConfig: " + JSON.stringify( menuConfig, null, 4 ) );
-		
 		menuConfig.sections[ 0 ].items[ activeIndex ].icon = "images/check.png";
 		menuConfig.sections[ 0 ].items[ inactiveIndex ].icon = null;
 	}
 	
-	subscribeMenu = new UI.Menu( menuConfig );
+	subscribeMenu = CreateMenu( menuConfig );
 	subscribeMenu.on( 'select', callback );
 	subscribeMenu.on( 'hide', function() { username = null; } );
 	subscribeMenu.show();
@@ -228,7 +322,7 @@ function awaitingAuthCallback( libname, data )
 	
 	if( authRequestCard === null )
 	{
-		authRequestCard = new UI.Card( cardConfig );
+		authRequestCard = CreateCard( cardConfig );
 		
 		authRequestCard.on
 		(
@@ -275,7 +369,7 @@ function authErrorCallback( libname, data )
 		body: 'There was a problem getting authorisation'
 	};
 	
-	var authErrorCard = new UI.Card( errorCardConfig );
+	var authErrorCard = CreateCard( errorCardConfig );
 	authErrorCard.show();
 	HideLoadingCard();
 }
@@ -306,7 +400,7 @@ main.on
 		{
 			console.log( "e.section == Menu.MainMenuItems.Trakt" );
 			
-			var ucCard = new UI.Card( Menu.Error.UnderConstruction );
+			var ucCard = CreateCard( Menu.Error.UnderConstruction );
 			ucCard.show();
 		}
 		else if( e.section == Menu.MainMenuItems.Options )
@@ -329,3 +423,4 @@ main.on
 );
 
 FetchTimelineToken();
+

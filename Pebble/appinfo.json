@@ -45,11 +45,12 @@
     "shortName": "TimeSync",
     "targetPlatforms": [
         "aplite",
-        "basalt"
+        "basalt",
+	"chalk"
     ],
     "uuid": "e4f0a722-aab7-4780-85c6-65b64aa87c8b",
     "versionCode": 1,
-    "versionLabel": "1.0",
+    "versionLabel": "1.12",
     "watchapp": {
         "hiddenApp": false,
         "watchface": false

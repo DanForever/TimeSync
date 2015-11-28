@@ -13,7 +13,7 @@
 // limitations under the License.
 
 //var domain =  "https://timesync-1061.appspot.com/";
-var domain = "https://3268ad1f.ngrok.io/";
+var domain = "https://43c632c5.ngrok.io/";
 
 var wrapper =
 {
