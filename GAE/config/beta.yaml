@@ -5,6 +5,9 @@ handlers:
   static_files: templates/beta.html
   upload: templates/beta.html
 
+- url: /beta/download/
+  script: apps.beta.app
+  
 - url: /beta/upload/.*
   script: apps.beta.app
   login: admin
