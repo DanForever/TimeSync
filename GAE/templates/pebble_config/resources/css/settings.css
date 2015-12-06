@@ -1,0 +1,16 @@
+
+body
+{
+	overflow-x: hidden;
+}
+
+.slider-offset
+{
+	padding-top: 0.85em;
+}
+
+.right
+{
+	float: right;
+	margin-right: 1em;
+}

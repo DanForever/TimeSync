@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Flat UI Free</title>
+	<meta content="width=device-width, initial-scale=1.0" name="viewport"><!-- Loading Bootstrap -->
+	<link href="resources/flat-ui/css/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet"><!-- Loading Flat UI -->
+	<link href="resources/flat-ui/css/flat-ui.css" rel="stylesheet">
+	<link href="resources/css/settings.css" rel="stylesheet">
+	<link href="resources/css/sticky-footer.css" rel="stylesheet">
+</head>
+<body>
+	<nav class="navbar navbar-inverse" role="navigation">
+		<div class="navbar-header">
+			<button class="navbar-toggle" data-target="#navbar-collapse-01" data-toggle="collapse" type="button"><span class="sr-only">Toggle navigation</span></button> <a class="navbar-brand" href="#">TimeSync</a>
+		</div>
+		<div class="collapse navbar-collapse" id="navbar-collapse-01">
+			<ul class="nav navbar-nav">
+				<li class="active">
+					<a href="#tvshowtime">TVShow Time</a>
+				</li>
+				<li class="active">
+					<a href="#fb-options">Facebook</a>
+				</li>
+			</ul>
+		</div><!-- /.navbar-collapse -->
+	</nav><!-- /navbar -->
+	<div id="wrap">
+		<div id="main">
+			<div class="row">
+				<div class="col-xs-1"></div>
+				<div class="col-xs-10">
+					<small>Tap an icon to reveal settings related to that particular service</small>
+				</div>
+				<div class="col-xs-1"></div>
+			</div><br>
+			<div class="row">
+				<div class="col-xs-1"></div>
+				<div class="col-xs-11">
+					<a data-toggle="collapse" href="#tvst-options"><img alt="TVShow Time" id="tvshowtime" src="resources/images/tvst.png"></a>
+				</div>
+			</div>
+			<div class="collapse" id="tvst-options">
+				<div id="tvst-noauth-warning">
+					<p></p>
+					<div class="row">
+						<div class="col-xs-1"></div>
+						<div class="col-xs-8 alert-warning">
+							<p></p>
+							<p>You must first authorise TimeSync with TVShow Time by entering the code displayed in the watch app itself into the URL displayed there.</p>
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-3"></div>
+				<p></p>
+				<form class="form-inline form-horizontal" role="form">
+					<div class="row">
+						<div class="col-xs-1"></div>
+						<div class="col-xs-7">
+							Add Agenda to Timeline
+						</div>
+						<div class="bootstrap-switch-square col-xs-4">
+							<input data-toggle="switch" id="subscribe-tvst" name="subscribe-tvst" type="checkbox">
+						</div>
+					</div><br>
+					<div class="row">
+						<div class="col-xs-1"></div>
+						<div class="col-xs-7 slider-offset">
+							<div id="tvst-offset-slider"></div>
+						</div>
+						<div class="col-xs-3">
+							<input class="form-control" id="tvst-offset-value" max="12" min="-12" type="number">
+						</div>
+						<div class="col-xs-1"></div>
+					</div>
+				</form>
+			</div><br>
+			<div class="row">
+				<div class="col-xs-1"></div>
+				<div class="col-xs-11">
+					<a data-toggle="collapse" href="#fb-options"><img alt="Facebook" id="facebook" src="resources/images/fb.png"></a>
+				</div>
+			</div>
+			<div class="collapse" id="fb-options">
+				<div id="fbev-noauth-warning">
+					<p></p>
+					<div class="row">
+						<div class="col-xs-1"></div>
+						<div class="col-xs-8 alert-warning">
+							<p></p>
+							<p>You must first authorise TimeSync with Facebook by entering the code displayed in the watch app itself into the URL displayed there.</p>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<p></p>
+					<div class="col-xs-1"></div>
+					<div class="col-xs-7">
+						Add Events to Timeline
+					</div>
+					<div class="bootstrap-switch-square col-xs-4">
+						<input data-toggle="switch" id="subscribe-fbev" name="subscribe-fbev" type="checkbox">
+					</div>
+				</div><br>
+			</div>
+			<br />
+		</div>
+	</div>
+	<div id="footer">
+		<button class="btn btn-hg btn-primary right" id="save">Save</button>
+	</div><!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+	<script src="resources/flat-ui/js/vendor/jquery.min.js">
+	</script> <!-- Include all compiled plugins (below), or include individual files as needed -->
+	 
+	<script src="resources/flat-ui/js/flat-ui.min.js">
+	</script> 
+	<script type="text/javascript">
+	//<![CDATA[
+	var hasTVShowTimeAuth = false;
+	var tvstIsSubscribedToAgenda = false;
+	var tvstHourOffsetInitialValue = 0;
+
+	var hasFacebookAuth = true;
+	var fbIsSubscribedToEvents = false;
+	//]]>
+	</script> 
+	<script src="resources/js/tvst.js">
+	</script> 
+	<script src="resources/js/fbev.js">
+	</script>
+</body>
+</html>
