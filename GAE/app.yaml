@@ -24,6 +24,10 @@ handlers:
   script: apps.cron.app
   secure: always
   login: admin
+
+- url: /v\d*/settings/.*
+  script: apps.settings.app
+  secure: always
   
 - url: /v\d*/callback/.*
   script: apps.callback.app

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>Flat UI Free</title>
+	<title>TimeSync App Configuration Menu</title>
 	<meta content="width=device-width, initial-scale=1.0" name="viewport"><!-- Loading Bootstrap -->
 	<link href="resources/flat-ui/css/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet"><!-- Loading Flat UI -->
 	<link href="resources/flat-ui/css/flat-ui.css" rel="stylesheet">
@@ -49,9 +49,9 @@
 							<p></p>
 							<p>You must first authorise TimeSync with TVShow Time by entering the code displayed in the watch app itself into the URL displayed there.</p>
 						</div>
+						<div class="col-xs-3"></div>
 					</div>
 				</div>
-				<div class="col-xs-3"></div>
 				<p></p>
 				<form class="form-inline form-horizontal" role="form">
 					<div class="row">
@@ -62,7 +62,12 @@
 						<div class="bootstrap-switch-square col-xs-4">
 							<input data-toggle="switch" id="subscribe-tvst" name="subscribe-tvst" type="checkbox">
 						</div>
-					</div><br>
+					</div>
+					<br />
+					<div class="row">
+						<div class="col-xs-1"></div>
+						<div class="col-xs-11">Manual Hour Offset</div>
+					</div>
 					<div class="row">
 						<div class="col-xs-1"></div>
 						<div class="col-xs-7 slider-offset">
@@ -116,12 +121,12 @@
 	</script> 
 	<script type="text/javascript">
 	//<![CDATA[
-	var hasTVShowTimeAuth = false;
-	var tvstIsSubscribedToAgenda = false;
+	var hasTVShowTimeAuth = {{ tvst.hasAuth }};
+	var tvstIsSubscribedToAgenda = {{ tvst.agenda }};
 	var tvstHourOffsetInitialValue = 0;
 
-	var hasFacebookAuth = true;
-	var fbIsSubscribedToEvents = false;
+	var hasFacebookAuth = {{ facebook.hasAuth }};
+	var fbIsSubscribedToEvents = {{ facebook.events }};
 	//]]>
 	</script> 
 	<script src="resources/js/tvst.js">

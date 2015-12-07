@@ -9,6 +9,9 @@ handlers:
   static_files: templates/privacy.html
   upload: templates/privacy.html
 
+- url: .*settings/.*/resources/
+  static_dir: templates/pebble_config/resources/
+  
 - url: .*/resources/
   static_dir: templates/resources/
 
