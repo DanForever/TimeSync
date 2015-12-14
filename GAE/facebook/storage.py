@@ -35,8 +35,7 @@ def CreateFacebookSubscription( fbuid, pebbleToken ):
 	(
 		key_name = fbuid,
 		watchToken = pebbleToken,
-		events = False,
-		birthdays = False
+		events = False
 	)
 	
 	return entry
