@@ -62,7 +62,7 @@ if ($slider.length > 0)
 
 function SetHourOffsetState( enabled )
 {
-	$slider.slider({ disabled: !enabled });
+	$slider.slider( { disabled: !enabled } );
 	$sliderValue.prop( 'disabled', !enabled );
 	
 	if( enabled )
@@ -86,6 +86,7 @@ $sliderValue.change
 if ( $agendaSubscriptionToggle.length )
 {
 	$agendaSubscriptionToggle.bootstrapSwitch();
+	$agendaSubscriptionToggle.bootstrapSwitch( 'state', tvstIsSubscribedToAgenda );
 	
 	if( !hasTVShowTimeAuth )
 	{
@@ -105,4 +106,15 @@ $agendaSubscriptionToggle.on
 if( hasTVShowTimeAuth )
 {
 	$tvstAuthWarning.hide();
+}
+
+function GetTVSTValues()
+{
+	values =
+	{
+		subscribed : $agendaSubscriptionToggle.is( ':checked' ),
+		hourOffset : $sliderValue.val()
+	};
+	
+	return values;
 }

@@ -15,6 +15,7 @@
 #System imports
 import logging
 from datetime import datetime
+from datetime import timedelta
 
 #Google imports
 from google.appengine.api import taskqueue
@@ -186,6 +187,10 @@ class Handler( common.base.Handler ):
 				
 				# Can't deal with this pin for some reason
 				return
+		
+		if user.hourOffset is not None:
+			hourOffset = timedelta( hours = user.hourOffset )
+			time = time + hourOffset
 		
 		pin = pebble.Pin( pebbleToken, id, time, episode[ "show" ][ "name" ], defines.PEBBLE_ICON, subtitle = subtitle, headings = headings, paragraphs = paragraphs, source = source )
 		

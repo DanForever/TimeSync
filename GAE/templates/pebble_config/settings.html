@@ -8,6 +8,7 @@
 	<link href="resources/flat-ui/css/flat-ui.css" rel="stylesheet">
 	<link href="resources/css/settings.css" rel="stylesheet">
 	<link href="resources/css/sticky-footer.css" rel="stylesheet">
+	<link href="resources/css/loader.css" rel="stylesheet">
 </head>
 <body>
 	<nav class="navbar navbar-inverse" role="navigation">
@@ -20,7 +21,7 @@
 					<a href="#tvshowtime">TVShow Time</a>
 				</li>
 				<li class="active">
-					<a href="#fb-options">Facebook</a>
+					<a href="#facebook">Facebook</a>
 				</li>
 			</ul>
 		</div><!-- /.navbar-collapse -->
@@ -33,7 +34,8 @@
 					<small>Tap an icon to reveal settings related to that particular service</small>
 				</div>
 				<div class="col-xs-1"></div>
-			</div><br>
+			</div>
+			<br />
 			<div class="row">
 				<div class="col-xs-1"></div>
 				<div class="col-xs-11">
@@ -53,33 +55,32 @@
 					</div>
 				</div>
 				<p></p>
-				<form class="form-inline form-horizontal" role="form">
-					<div class="row">
-						<div class="col-xs-1"></div>
-						<div class="col-xs-7">
-							Add Agenda to Timeline
-						</div>
-						<div class="bootstrap-switch-square col-xs-4">
-							<input data-toggle="switch" id="subscribe-tvst" name="subscribe-tvst" type="checkbox">
-						</div>
+				<div class="row">
+					<div class="col-xs-1"></div>
+					<div class="col-xs-7">
+						Add Agenda to Timeline
 					</div>
-					<br />
-					<div class="row">
-						<div class="col-xs-1"></div>
-						<div class="col-xs-11">Manual Hour Offset</div>
+					<div class="bootstrap-switch-square col-xs-4">
+						<input data-toggle="switch" id="subscribe-tvst" name="subscribe-tvst" type="checkbox">
 					</div>
-					<div class="row">
-						<div class="col-xs-1"></div>
-						<div class="col-xs-7 slider-offset">
-							<div id="tvst-offset-slider"></div>
-						</div>
-						<div class="col-xs-3">
-							<input class="form-control" id="tvst-offset-value" max="12" min="-12" type="number">
-						</div>
-						<div class="col-xs-1"></div>
+				</div>
+				<br />
+				<div class="row">
+					<div class="col-xs-1"></div>
+					<div class="col-xs-11">Manual Hour Offset</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-1"></div>
+					<div class="col-xs-7 slider-offset">
+						<div id="tvst-offset-slider"></div>
 					</div>
-				</form>
-			</div><br>
+					<div class="col-xs-3">
+						<input class="form-control" id="tvst-offset-value" max="12" min="-12" type="number">
+					</div>
+					<div class="col-xs-1"></div>
+				</div>
+			</div>
+			<br />
 			<div class="row">
 				<div class="col-xs-1"></div>
 				<div class="col-xs-11">
@@ -106,13 +107,21 @@
 					<div class="bootstrap-switch-square col-xs-4">
 						<input data-toggle="switch" id="subscribe-fbev" name="subscribe-fbev" type="checkbox">
 					</div>
-				</div><br>
+				</div>
+				<br />
 			</div>
 			<br />
 		</div>
 	</div>
 	<div id="footer">
-		<button class="btn btn-hg btn-primary right" id="save">Save</button>
+		<button class="btn btn-hg btn-primary right" id="save">
+		<div id="save-txt">Save</div>
+		<div class="spinner" id="save-indicator" style="display: none;">
+			<div class="bounce1"></div>
+			<div class="bounce2"></div>
+			<div class="bounce3"></div>
+		</div>
+		</button>
 	</div><!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 	<script src="resources/flat-ui/js/vendor/jquery.min.js">
 	</script> <!-- Include all compiled plugins (below), or include individual files as needed -->
@@ -123,10 +132,12 @@
 	//<![CDATA[
 	var hasTVShowTimeAuth = {{ tvst.hasAuth }};
 	var tvstIsSubscribedToAgenda = {{ tvst.agenda }};
-	var tvstHourOffsetInitialValue = 0;
+	var tvstHourOffsetInitialValue = {{ tvst.hourOffset }};
 
 	var hasFacebookAuth = {{ facebook.hasAuth }};
 	var fbIsSubscribedToEvents = {{ facebook.events }};
+	
+	var pebbleToken = "{{ pebbleToken }}";
 	//]]>
 	</script> 
 	<script src="resources/js/tvst.js">

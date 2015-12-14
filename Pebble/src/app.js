@@ -24,43 +24,52 @@ var ignoreAuthCallback = true;
 var isLoadingCardVisible = false;
 var username = "";
 var isChalk = false;
+var watchInfo = null;
 
-if( Pebble.getActiveWatchInfo )
+var main;
+var loadingCard;
+var splashCard;
+
+function FetchWatchInfo()
 {
-	watchInfo = Pebble.getActiveWatchInfo();
-	console.log( "Watch Info: " + JSON.stringify( watchInfo, null, 4 ) );
+	if( Pebble.getActiveWatchInfo )
+	{
+		watchInfo = Pebble.getActiveWatchInfo();
+		console.log( "Watch Info: " + JSON.stringify( watchInfo, null, 4 ) );
 
-	if( watchInfo !== null )
-	{
-		isChalk = watchInfo.platform === "chalk";
-	}
+		if( watchInfo !== null )
+		{
+			isChalk = watchInfo.platform === "chalk";
+		}
 	
-	if( isChalk )
-	{
-		console.log( "We've got ourselves a PTR here!" );
+		if( isChalk )
+		{
+			console.log( "We've got ourselves a PTR here!" );
+		}
+		else
+		{
+			console.log( "Typical Pebble" );
+		}
 	}
 	else
 	{
-		console.log( "Typical Pebble" );
+		console.log( "Pebble.getActiveWatchInfo not available" );
 	}
 }
-else
-{
-	console.log( "Pebble.getActiveWatchInfo not available" );
-}
-
-var main = CreateMenu( Menu.MainMenu );
-var loadingCard = CreateCard( Menu.PleaseWait );
 
 function CreateCard( config )
 {
-	console.log( "CreateCard()" );
+	console.log( "CreateCard(): " + config.title );
 	
 	if( isChalk )
 	{
 		console.log( "chalk!" );
 	
-		config.title = "\n    " + config.title;
+		if( config.title )
+		{
+			config.title = "\n    " + config.title;
+		}
+		
 		config.fullscreen = true;
 		
 		if( config.body )
@@ -99,6 +108,7 @@ function CreateCard( config )
 		}
 	}
 	
+	console.log( "Returning new card!" );
 	return new UI.Card( config );
 }
 
@@ -118,6 +128,8 @@ function CreateMenu( config )
 
 function ShowLoadingCard()
 {
+	console.log( "ShowLoadingCard(): " + JSON.stringify( loadingCard ) );
+	
 	loadingCard.show();
 	isLoadingCardVisible = true;
 }
@@ -160,7 +172,25 @@ function FetchTimelineToken()
 				analytics.SendWatchInfo( timelineToken, watchInfo );
 			}
 			
+			var defines = require( 'defines' );
+			var Settings = require('settings');
+			Settings.config
+			(
+				{
+					url : defines.Domain + "v1/settings/view/" + timelineToken + "/"
+				},
+				function(e)
+				{
+					console.log( 'opening configurable' );
+				},
+				function(e)
+				{
+					console.log( 'closed configurable' );
+				}
+			);
+			
 			main.show();
+			splashCard.hide();
 		},
 		
 		function( error )
@@ -170,6 +200,7 @@ function FetchTimelineToken()
 			var noTimelineCard = CreateCard( Menu.Error.NoTimelineToken );
 			
 			noTimelineCard.show();
+			HideLoadingCard();
 		}
 	);
 	
@@ -374,53 +405,65 @@ function authErrorCallback( libname, data )
 	HideLoadingCard();
 }
 
-main.on
-(
-	'select',
-	function( e )
+function onMainMenuShown( e )
+{
+	console.log( "main.on()" );
+	var auth = require( 'auth' );
+	
+	if( e.item == Menu.FacebookItems.Events )
 	{
-		console.log( "main.on()" );
-		var auth = require( 'auth' );
+		console.log( "e.items == Menu.FacebookItems.Events" );
+		ignoreAuthCallback = false;
+		auth.Auth( timelineToken, "fb", hasAuthCallback, awaitingAuthCallback, authErrorCallback );
+		ShowLoadingCard();
+	}
+	else if( e.item == Menu.TVShowTimeItems.Agenda )
+	{
+		console.log( "e.item == Menu.TVShowTimeItems.Agenda" );
+		ignoreAuthCallback = false;
+		auth.Auth( timelineToken, "tvshowtime", hasAuthCallback, awaitingAuthCallback, authErrorCallback );
+		ShowLoadingCard();
+	}
+	else if( e.section == Menu.MainMenuItems.Trakt )
+	{
+		console.log( "e.section == Menu.MainMenuItems.Trakt" );
 		
-		if( e.item == Menu.FacebookItems.Events )
+		var ucCard = CreateCard( Menu.Error.UnderConstruction );
+		ucCard.show();
+	}
+	else if( e.section == Menu.MainMenuItems.Options )
+	{
+		console.log( "e.section == Menu.MainMenuItems.Options" );
+		
+		if( e.item == Menu.OptionsItems.Delete )
 		{
-			console.log( "e.items == Menu.FacebookItems.Events" );
-			ignoreAuthCallback = false;
-			auth.Auth( timelineToken, "fb", hasAuthCallback, awaitingAuthCallback, authErrorCallback );
-			ShowLoadingCard();
-		}
-		else if( e.item == Menu.TVShowTimeItems.Agenda )
-		{
-			console.log( "e.item == Menu.TVShowTimeItems.Agenda" );
-			ignoreAuthCallback = false;
-			auth.Auth( timelineToken, "tvshowtime", hasAuthCallback, awaitingAuthCallback, authErrorCallback );
-			ShowLoadingCard();
-		}
-		else if( e.section == Menu.MainMenuItems.Trakt )
-		{
-			console.log( "e.section == Menu.MainMenuItems.Trakt" );
+			console.log( "e.item == Menu.OptionsItems.Delete" );
 			
-			var ucCard = CreateCard( Menu.Error.UnderConstruction );
-			ucCard.show();
-		}
-		else if( e.section == Menu.MainMenuItems.Options )
-		{
-			console.log( "e.section == Menu.MainMenuItems.Options" );
+			var request = require( 'request' );
+			var deleteme = require( 'deleteme' );
 			
-			if( e.item == Menu.OptionsItems.Delete )
-			{
-				console.log( "e.item == Menu.OptionsItems.Delete" );
-				
-				var request = require( 'request' );
-				var deleteme = require( 'deleteme' );
-				
-				request.Request( timelineToken, deleteme.Config.Data, deleteMyDataCallback );
-				
-				ShowLoadingCard();
-			}
+			request.Request( timelineToken, deleteme.Config.Data, deleteMyDataCallback );
+			
+			ShowLoadingCard();
 		}
 	}
+}
+
+splashCard = CreateCard( { banner : "images/ts_splash.png", fullscreen : true, title: "\n" } );
+splashCard.show();
+
+Pebble.addEventListener
+(
+	"ready",
+	function()
+	{
+		FetchWatchInfo();
+
+		main = CreateMenu( Menu.MainMenu );
+		main.on( 'select', onMainMenuShown );
+		
+		loadingCard = CreateCard( Menu.PleaseWait );
+		
+		FetchTimelineToken();
+	}
 );
-
-FetchTimelineToken();
-

@@ -60,6 +60,9 @@ def IterateSubscriptions( callback, cursor = None ):
 class TVShowtimeUser( db.Model ):
 	id = db.IntegerProperty()
 	name = db.StringProperty()
+	
+	#User settings
+	hourOffset = db.IntegerProperty()
 
 def StoreUser( pebbleToken, id, name ):
 	user = TVShowtimeUser( key_name = pebbleToken, id = id, name = name )
