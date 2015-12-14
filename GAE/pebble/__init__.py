@@ -184,3 +184,47 @@ class Pin():
 			logging.warning( "Create Pin Failed Request : " + str( config ) )
 		
 		return ( response[ 0 ], response[ 1 ] )
+	
+	@staticmethod
+	def Delete( id, pebbleToken ):
+		# Construct the request config
+		config = \
+		{
+			'request' :
+			{
+				'url' : "https://timeline-api.getpebble.com/v1/user/pins/" + id,
+				'method' : "DELETE",
+				
+				'headers' :
+				{
+					'X-User-Token'	: pebbleToken
+				},
+			},
+			
+			'response' :
+			{
+				'success' :
+				{
+					'status' : requests.codes.ok,
+					'map' : {}
+				},
+				
+				'failure' :
+				{
+					'map' :
+					{
+						'message' : "errorCode"
+					}
+				}
+			}
+		}
+	
+		logging.info( "Deleting pin: " + id )
+	
+		response = net.MakeRequest( config )
+		
+		if response[ 0 ] != requests.codes.ok:
+			logging.error( "Delete Pin Failed Response: " + str( response[ 1 ] ) )
+			logging.error( "Delete Pin Failed Request : " + str( config ) )
+		
+		return ( response[ 0 ], response[ 1 ] )
