@@ -25,12 +25,12 @@ function GetFBEVValues()
 }
 
 // http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript?page=1&tab=votes#tab-top
-function getParameterByName( name )
+function getParameterByName( name, fallback )
 {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
         results = regex.exec(location.search);
-    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    return results === null ? fallback : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
 var $saveButton = $( "#save" );
@@ -61,13 +61,10 @@ $( document ).ready
 						data: JSON.stringify( data ),
 						contentType: "application/json; charset=utf-8",
 						dataType: "json",
-						success: function( data )
+						complete: function()
 						{
 							var return_to = getParameterByName( 'return_to', 'pebblejs://close#' );
 							document.location = return_to;
-						},
-						failure: function( errMsg )
-						{
 						}
 					}
 				);
