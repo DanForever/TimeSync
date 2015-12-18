@@ -23,13 +23,13 @@ class PebbleHardware( db.Model ):
 	model			= db.StringProperty()
 	language		= db.StringProperty()
 	
-	firmware_major	= db.IntegerProperty()
-	firmware_minor	= db.IntegerProperty()
-	firmware_patch	= db.IntegerProperty()
-	firmware_suffix	= db.StringProperty()
+	firmware_major	= db.IntegerProperty( indexed = False )
+	firmware_minor	= db.IntegerProperty( indexed = False )
+	firmware_patch	= db.IntegerProperty( indexed = False )
+	firmware_suffix	= db.StringProperty( indexed = False )
 	
 	created 		= db.DateTimeProperty( auto_now_add = True )
-	modified 		= db.DateTimeProperty( auto_now = True )
+	modified 		= db.DateTimeProperty( auto_now = True, indexed = False )
 
 def StoreHardwareInfo( pebbleToken, watchInfo ):
 	key = db.Key.from_path( 'PebbleHardware', pebbleToken )
@@ -50,4 +50,8 @@ def StoreHardwareInfo( pebbleToken, watchInfo ):
 	pebbleHardware.firmware_suffix	= watchInfo[ "firmware" ][ "suffix" ]
 	
 	pebbleHardware.put()
-	
+
+def IterateHardwareInfo( callback ):
+	query = PebbleHardware.all()
+	for item in query.run( limit = 1000 ):
+		callback( item )

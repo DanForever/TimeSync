@@ -19,7 +19,7 @@
     <h1>Analytics</h1>
     <p>
     {% for chart in charts %}
-      <canvas id="{{ chart.id }}" width="250" height="250"></canvas>
+      <canvas id="{{ chart.id }}" width="{{ chart.width }}" height="{{ chart.height }}"></canvas>
       <script>
       {{ chart.javascript }}
       </script>
