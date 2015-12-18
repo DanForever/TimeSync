@@ -59,7 +59,8 @@ def IterateSubscriptions( callback, cursor = None ):
 
 class TVShowtimeUser( db.Model ):
 	id = db.IntegerProperty()
-	name = db.StringProperty()
+	name = db.StringProperty( indexed = False )
+	created = db.DateTimeProperty( auto_now_add = True )
 	
 	#User settings
 	hourOffset = db.IntegerProperty()

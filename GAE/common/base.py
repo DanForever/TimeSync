@@ -16,7 +16,7 @@
 import requests
 
 #Project Imports
-import common.storage
+import auth.storage
 import auth.keys
 
 class HTTPResponse():
@@ -37,7 +37,7 @@ class Handler():
 				pebbleToken = self.request.headers[ "X-User-Token" ]
 		
 		if platformAccess is None:
-			platformAccess = common.storage.FindPlatformAccessCode( pebbleToken, platform )
+			platformAccess = auth.storage.FindPlatformAccessCode( pebbleToken, platform )
 			if platformAccess is None:
 				return None
 		

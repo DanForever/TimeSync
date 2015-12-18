@@ -16,16 +16,13 @@
 from google.appengine.ext import db
 from google.appengine.ext import blobstore
 
-class PlatformAccess( db.Model ):
-	token = db.StringProperty()
-
 class WatchPin( db.Model ):
 	title = db.StringProperty()
 	body = db.StringProperty( multiline = True )
 	start_time = db.DateTimeProperty()
 
 class BetaKey( db.Model ):
-	id = blobstore.BlobReferenceProperty()
+	id = blobstore.BlobReferenceProperty( indexed = False )
 
 def CreateBetaKey( key ):
 	betaKey = BetaKey( key_name = "Key", id = key )
@@ -34,7 +31,7 @@ def CreateBetaKey( key ):
 def FindBetaKey():
 	key = db.Key.from_path( 'BetaKey', "Key" )
 	return db.get( key )
-	
+
 def FindChild( pebbleToken, platform, childType ):
 	parentKey = db.Key.from_path( 'Watch', pebbleToken )
 	key = db.Key.from_path( childType, platform, parent = parentKey )
@@ -42,9 +39,6 @@ def FindChild( pebbleToken, platform, childType ):
 	
 	return request
 
-def FindPlatformAccessCode( pebbleToken, platform ):
-	return FindChild( pebbleToken, platform, 'PlatformAccess' )
-	
 def DeleteAllPinsForUser( pebbleToken ):
 	parentKey = db.Key.from_path( 'Watch', pebbleToken )
 	pins = WatchPin.all()

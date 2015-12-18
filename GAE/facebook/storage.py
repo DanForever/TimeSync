@@ -17,14 +17,15 @@ from google.appengine.ext import db
 
 class FacebookSubscription( db.Model ):
 	watchToken = db.StringProperty()
-	events = db.BooleanProperty()
+	events = db.BooleanProperty( indexed = False )
 	created = db.DateTimeProperty( auto_now_add = True )
 
 class TemporaryAuthToken( db.Model ):
-	token = db.StringProperty()
+	token = db.StringProperty( indexed = False )
 
 class FacebookUser( db.Model ):
-	name = db.StringProperty()
+	name = db.StringProperty( indexed = False )
+	created = db.DateTimeProperty( auto_now_add = True )
 
 def CreateTemporaryAuthToken( token, generatedToken ):
 	token = TemporaryAuthToken( key_name = generatedToken, token = token )

@@ -20,22 +20,22 @@ class Watch( db.Model ):
 
 class PlatformAuthRequest( db.Model ):
 	# Internal code used to verify authorisation with platform
-	auth_code = db.StringProperty()
+	auth_code = db.StringProperty( indexed = False )
 	
 	# Code displayed to the user that they have to manually enter into platform website
-	user_code = db.StringProperty()
+	user_code = db.StringProperty( indexed = False )
 	
 	# URL the user must go to in order to enter the user_code and authorise their pebble
-	user_uri = db.LinkProperty()
+	user_uri = db.LinkProperty( indexed = False )
 	
 	# Expire time
 	expires = db.DateTimeProperty()
 	
 	# Expire time
-	update_interval = db.IntegerProperty()
+	update_interval = db.IntegerProperty( indexed = False )
 
 class PlatformAccess( db.Model ):
-	token = db.StringProperty()
+	token = db.StringProperty( indexed = False )
 
 def CreateWatch( access_token ):
 	watch = Watch( key_name = access_token )
