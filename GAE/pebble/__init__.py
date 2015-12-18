@@ -26,10 +26,11 @@ import random
 import string
 
 #Library Imports
-import requests
+from requests import codes
 
 #Project Imports
 import net
+import common.datetime
 
 def AssemblePinSignature():
 	firstLetter = random.SystemRandom().choice( string.ascii_uppercase )
@@ -94,13 +95,27 @@ class Pin():
 		}
 		
 		self.actions.append( action )
-	
+		
 	def Send( self ):
+		
+		now = datetime.now( common.datetime.UTC )
+		timeUntilPin = self.time - now
+		
+		# Can't have pins more than a year in the future
+		if timeUntilPin.days > 364:
+			logging.warning( "Ignoring pin with id " + str( self.id ) + " as it's more than a year in the future" )
+			return ( codes.bad_request, { "message" : "INVALID_DATE_FUTURE" } )
+		
+		# Can't have pins more than 2 days in the past
+		if timeUntilPin.days < -1:
+			logging.warning( "Ignoring pin with id " + str( self.id ) + " as it's more than 2 days in the past" )
+			return ( codes.bad_request, { "message" : "INVALID_DATE_PAST" } )
+		
 		#Convert the python datetime object into an iso8601-ish format for the pebble api
 		pebbleDateFormat = "%Y-%m-%dT%H:%M:%SZ"
 		timeInPebbleFormat = self.time.strftime( pebbleDateFormat )
 		
-		lastUpdated = datetime.utcnow().strftime( pebbleDateFormat )
+		lastUpdated = now.strftime( pebbleDateFormat )
 		
 		if self.source is not None:
 			self.headings.append( "Source" )
@@ -163,7 +178,7 @@ class Pin():
 			{
 				'success' :
 				{
-					'status' : requests.codes.ok,
+					'status' : codes.ok,
 					'map' : {}
 				},
 				
@@ -179,9 +194,15 @@ class Pin():
 		
 		response = net.MakeRequest( config )
 		
-		if response[ 0 ] != requests.codes.ok:
-			logging.warning( "Create Pin Failed Response: " + str( response[ 1 ] ) )
-			logging.warning( "Create Pin Failed Request : " + str( config ) )
+		if response[ 0 ] != codes.ok:
+			
+			if response[ 1 ][ "message" ] == "INVALID_JSON":
+				logFunc = logging.error
+			else:
+				logFunc = logging.warning
+			
+			logFunc( "Create Pin Failed Response: " + str( response[ 1 ] ) )
+			logFunc( "Create Pin Failed Request : " + str( config ) )
 		
 		return ( response[ 0 ], response[ 1 ] )
 	
@@ -205,7 +226,7 @@ class Pin():
 			{
 				'success' :
 				{
-					'status' : requests.codes.ok,
+					'status' : codes.ok,
 					'map' : {}
 				},
 				
@@ -223,7 +244,7 @@ class Pin():
 	
 		response = net.MakeRequest( config )
 		
-		if response[ 0 ] != requests.codes.ok:
+		if response[ 0 ] != codes.ok:
 			logging.error( "Delete Pin Failed Response: " + str( response[ 1 ] ) )
 			logging.error( "Delete Pin Failed Request : " + str( config ) )
 		
