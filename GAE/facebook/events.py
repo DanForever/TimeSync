@@ -25,6 +25,7 @@ import net
 import defines
 import pebble
 import auth.keys
+import common.datetime
 
 RSVP = \
 {
@@ -39,7 +40,7 @@ def Fetch( pebbleToken, db, fbuid ):
 	
 	# Since the timeline can't be populated with anything older than 2 days ago
 	# We limit the query to recent and future events
-	since = datetime.datetime.now( defines.UTC ) - datetime.timedelta( days = 2 )
+	since = datetime.datetime.now( common.datetime.UTC ) - datetime.timedelta( days = 2 )
 	db[ defines.START_DATE_KEY ] = defines.DateTimeToISO8601( since )
 	
 	response = net.MakeRequest( config.user.EVENTS, db )
@@ -77,7 +78,7 @@ def AddEvent( pebbleToken, event, fbuid ):
 	{
 		'pebbleToken' : pebbleToken,
 		'id' : "ts-fbev-" + str( fbuid ) + "-" + str( event[ 'id' ] ),
-		'time' : defines.ISO8601ToDateTime( event[ 'start_time' ] ).astimezone( defines.UTC ),
+		'time' : defines.ISO8601ToDateTime( event[ 'start_time' ] ).astimezone( common.datetime.UTC ),
 		'title' : event[ 'name' ],
 		'icon' : "system://images/NOTIFICATION_FACEBOOK",
 		'source' : "Facebook Events",

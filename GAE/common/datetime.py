@@ -12,22 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Imports from the world of tomorrow
+from __future__ import absolute_import
+
 #System Imports
-import iso8601
+import datetime
 
-PLATFORM = 'FACEBOOK'
-PLATFORM_VERSION = "v2.5"
+# This class is a hack to avoid installing/importing pytz
+ZERO = datetime.timedelta( 0 )
+class timezoneUTC(datetime.tzinfo):
+	"""UTC"""
 
-SUBSCRIBE_HANDSHAKE_TOKEN = "ts_fb_hs_tok"
+	def utcoffset( self, dt ):
+		return ZERO
+	
+	def tzname( self, dt ):
+		return "UTC"
+	
+	def dst( self, dt ):
+		return ZERO
 
-URL_BASE = 'https://graph.facebook.com/'
-URL_SUB_AUTH = 'oauth/device'
-
-START_DATE_KEY = "from_date"
-
-def ISO8601ToDateTime( strDt ):
-	return iso8601.parse_date( strDt )
-
-def DateTimeToISO8601( dt ):
-	outputFormat = "%Y-%m-%dT%H:%M:%S%z"
-	return dt.strftime( outputFormat )
+UTC = timezoneUTC()
