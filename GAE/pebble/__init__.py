@@ -171,7 +171,6 @@ class Pin():
 				},
 				
 				'data' : jsonToString( data )
-				#'data' : data
 			},
 			
 			'response' :
