@@ -24,6 +24,7 @@ from json import dumps as jsonToString
 import logging
 import random
 import string
+import zlib
 
 #Library Imports
 from requests import codes
@@ -31,6 +32,7 @@ from requests import codes
 #Project Imports
 import net
 import common.datetime
+import storage
 
 def AssemblePinSignature():
 	firstLetter = random.SystemRandom().choice( string.ascii_uppercase )
@@ -43,6 +45,11 @@ def Sanitise( input, maxLength ):
 		if len( input ) > maxLength:
 			input = input[ : maxLength - 3 ] + "..."
 	return input
+
+def CalcHash( data ):
+	if data is None:
+		return 0
+	return zlib.adler32( data )
 
 class Pin():
 	def __init__( self, pebbleToken, id, time, title, icon, description = None, subtitle = None, location = None, duration = None, headings = None, paragraphs = None, source = None ):
@@ -96,6 +103,44 @@ class Pin():
 		
 		self.actions.append( action )
 		
+	def DataMatchesExistingPin( self ):
+		
+		headings = []
+		paragraphs = []
+		
+		for i in xrange( len( self.headings ) ):
+			headings.append( CalcHash( self.headings[ i ] ) )
+			paragraphs.append( CalcHash( self.paragraphs[ i ] ) )
+		
+		
+		data = \
+		{
+			'time'			: self.time,
+			
+			'title'			: CalcHash( self.title ),
+			'description'	: CalcHash( self.description ),
+			'location'		: CalcHash( self.location ),
+			'subtitle'		: CalcHash( self.subtitle ),
+			'duration'		: CalcHash( self.duration ),
+			'source'		: CalcHash( self.source ),
+			
+			'headings'		: headings,
+			'paragraphs'	: paragraphs
+		}
+		
+		newPin = storage.CreateTimelinePin( self.id, **data )
+		
+		oldPin = storage.FindTimelinePin( self.id )
+		
+		if oldPin is not None and oldPin.IsEqualTo( newPin ):
+			#There have been no changes since the last time we were given this pin data
+			return True
+		
+		# Save the new pin data
+		newPin.put()
+		
+		return False
+
 	def Send( self ):
 		
 		now = datetime.now( common.datetime.UTC )
@@ -107,9 +152,13 @@ class Pin():
 			return ( codes.bad_request, { "message" : "INVALID_DATE_FUTURE" } )
 		
 		# Can't have pins more than 2 days in the past
-		if timeUntilPin.days < -1:
+		if timeUntilPin.days < -2:
 			logging.warning( "Ignoring pin with id " + str( self.id ) + " as it's more than 2 days in the past" )
 			return ( codes.bad_request, { "message" : "INVALID_DATE_PAST" } )
+		
+		if self.DataMatchesExistingPin():
+			logging.info( "Skipping pin with id " + str( self.id ) + " as there have been no changes since the previous time this pin was sent to the server" )
+			return ( codes.ok, { "message" : "NO_CHANGE" } )
 		
 		#Convert the python datetime object into an iso8601-ish format for the pebble api
 		pebbleDateFormat = "%Y-%m-%dT%H:%M:%SZ"
