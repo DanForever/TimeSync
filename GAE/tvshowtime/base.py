@@ -234,5 +234,4 @@ class Handler( common.base.Handler ):
 		
 		pin.AddAction( action[ "title" ], url, headers )
 		
-		return ( 200, "ok" )
-		#return pin.Send()
+		return pin.Send()
