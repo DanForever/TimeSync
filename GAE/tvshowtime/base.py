@@ -177,16 +177,24 @@ class Handler( common.base.Handler ):
 		]
 		
 		try:
+			#24 hour clock (when user has local time selected)
 			time = datetime.strptime( timeStr, "%Y-%m-%d %H:%M" )
 		except Exception as first:
 			try:
+				#12 hour clock (when user has network time selected)
 				time = datetime.strptime( timeStr, "%Y-%m-%d %I:%M %p" )
 			except Exception as second:
-				logging.error( "Failed to convert as 24 hour clock: " + str( first ) )
-				logging.error( "Failed to convert as 12 hour clock: " + str( second ) )
-				
-				# Can't deal with this pin for some reason
-				return
+				try:
+					#12 hour short clock (something inconsistant with the data returned from tvshowtime)
+					time = datetime.strptime( timeStr, "%Y-%m-%d %I%p" )
+				except Exception as third:
+					logging.error( "Failed to convert as 24 hour clock: " + str( first ) )
+					logging.error( "Failed to convert as 12 hour clock: " + str( second ) )
+					logging.error( "Failed to convert as 12 hour short: " + str( third ) )
+					logging.error( "Episode: " + str( episode ) )
+					
+					# Can't deal with this pin for some reason
+					return ( requests.codes.ok, "INVALID_TIME_FORMAT" )
 		
 		if user.hourOffset is not None:
 			hourOffset = timedelta( hours = user.hourOffset )
@@ -226,4 +234,5 @@ class Handler( common.base.Handler ):
 		
 		pin.AddAction( action[ "title" ], url, headers )
 		
-		return pin.Send()
+		return ( 200, "ok" )
+		#return pin.Send()
