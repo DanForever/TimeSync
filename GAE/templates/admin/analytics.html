@@ -10,6 +10,7 @@
     <script src="resources/js/jquery.js"></script>
     <script src="resources/js/svg.js"></script>
     <script src="resources/js/Chart.js/Chart.js"></script>
+    <script src="resources/js/global_chart_settings.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   </head>
   <body>
@@ -20,6 +21,7 @@
     <p>
     {% for chart in charts %}
       <canvas id="{{ chart.id }}" width="{{ chart.width }}" height="{{ chart.height }}"></canvas>
+	  <div id="{{ chart.id }}_legend"></div>
       <script>
       {{ chart.javascript }}
       </script>

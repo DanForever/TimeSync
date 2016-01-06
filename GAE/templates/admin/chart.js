@@ -14,3 +14,5 @@ var data =
 ];
 
 var myDoughnutChart = new Chart( ctx ).Doughnut( data, null );
+
+$( "#{{ id }}_legend" ).append( myDoughnutChart.generateLegend() )
