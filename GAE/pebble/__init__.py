@@ -49,6 +49,10 @@ def Sanitise( input, maxLength ):
 def CalcHash( data ):
 	if data is None:
 		return 0
+	if isinstance( data, unicode ):
+		logging.debug( "Data is unicode, converting: " + data )
+		data = jsonToString( data )
+		logging.debug( "Data is json: " + data )
 	return zlib.adler32( data )
 
 class Pin():
