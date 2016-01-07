@@ -25,11 +25,12 @@ import requests
 
 #Project imports
 import common.base
+import common.storage
+import common.datetime
 import defines
 import pebble
 import net
 import auth.keys
-import common.storage
 import storage
 
 class Handler( common.base.Handler ):
@@ -199,6 +200,9 @@ class Handler( common.base.Handler ):
 		if user.hourOffset is not None:
 			hourOffset = timedelta( hours = user.hourOffset )
 			time = time + hourOffset
+		
+		#Until we get timezone information from tvshowtime, we have to assume UTC
+		time = time.replace( tzinfo = common.datetime.UTC )
 		
 		pin = pebble.Pin( pebbleToken, id, time, episode[ "show" ][ "name" ], defines.PEBBLE_ICON, subtitle = subtitle, headings = headings, paragraphs = paragraphs, source = source )
 		
