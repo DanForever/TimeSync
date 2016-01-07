@@ -121,7 +121,7 @@ class Pin():
 			'description'	: CalcHash( self.description ),
 			'location'		: CalcHash( self.location ),
 			'subtitle'		: CalcHash( self.subtitle ),
-			'duration'		: CalcHash( self.duration ),
+			'duration'		: CalcHash( str( self.duration ) ),
 			'source'		: CalcHash( self.source ),
 			
 			'headings'		: headings,
