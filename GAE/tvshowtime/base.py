@@ -156,10 +156,6 @@ class Handler( common.base.Handler ):
 			if user is None:
 				return ( requests.codes.unauthorized, "" )
 		
-		#Delete old pins which have the date embedded in the id
-		oldId = "ts-tvst-agenda-" + str( user.id ) + "-" + str( episode[ "id" ] ) + "-" + str( episode[ "air_date" ] )
-		pebble.Pin.Delete( oldId, pebbleToken )
-		
 		id = "ts-tvst-agenda-" + str( user.id ) + "-" + str( episode[ "id" ] )
 		timeStr = episode[ "air_date" ] + " " + episode[ "air_time" ]
 		subtitle = episode[ "network" ]
